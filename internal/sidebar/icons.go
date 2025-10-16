@@ -33,12 +33,14 @@ var extToIconMap = map[string]string{
 	".r":     "\ue67a",
 	".elixir":"\ue62d",
 	".md":    "\ue73e",
+	".json":  "\ue60b",
 }
 
 var extToIconColor = map[string]string{
 	".go":    "39",   // bright blue
 	".py":    "226",  // yellow
 	".js":    "220",  // golden yellow
+	".json":  "220",
 	".ts":    "33",   // light blue
 	".java":  "208",  // orange
 	".rs":    "208",  // rust orange
@@ -90,7 +92,7 @@ var DirIcons = dirIconsStruct{
 }
 
 
-// Returns the PUA string of the file icon and the ANSI color code as a string
+// GetFileIcon returns the PUA string of the file icon and the ANSI color code as a string
 // Eg: test.go => ('\ue627', '39')
 func GetFileIcon(filename string) (string, string) {
 	// Get file extension. If not we continue with the filename as is
@@ -126,7 +128,7 @@ func GetDefaultFileIcon() string {
 }
 
 
-// Returns the directory icon
+// GetDirectoryIcon returns the directory icon
 func GetDirectoryIcon(node *FileNode) string {
 	downChevron := "\ueab4"
 	leftChevron := "\ueab6"

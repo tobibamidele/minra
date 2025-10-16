@@ -12,7 +12,7 @@ type Highlighter struct {
 // New creates a new highlighter
 func New() *Highlighter {
 	return &Highlighter{
-		language: languages.NewGo(),
+		language: languages.NewPlain(),
 	}
 }
 

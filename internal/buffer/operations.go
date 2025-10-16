@@ -2,6 +2,17 @@ package buffer
 
 import "strings"
 
+var autoPairMap = map[rune]rune{
+	'{': '}',
+	'[': ']',
+	'(': ')',
+	'\'': '\'',
+	'"':  '"',
+}
+
+// tabSize defines indentation width
+const tabSize = 4
+
 // InsertRune inserts a rune at cursor position
 func (b *Buffer) InsertRune(line, col int, r rune) {
 	if line < 0 || line >= len(b.lines) {
@@ -12,10 +23,26 @@ func (b *Buffer) InsertRune(line, col int, r rune) {
 	if col < 0 {
 		col = 0
 	}
-	if col > len(currentLine){
+	if col > len(currentLine) {
 		col = len(currentLine)
 	}
 
+	// Handle tag auto-close: <tag> → </tag>
+	if r == '>' {
+		insert := b.autoCloseTags(currentLine, col)
+		b.lines[line] = currentLine[:col] + insert + currentLine[col:]
+		b.modified = true
+		return
+	}
+
+	// Regular auto-pairing for brackets and quotes
+	if closing, ok := autoPairMap[r]; ok {
+		b.lines[line] = currentLine[:col] + string(r) + string(closing) + currentLine[col:]
+		b.modified = true
+		return
+	}
+
+	// Normal character insertion
 	b.lines[line] = currentLine[:col] + string(r) + currentLine[col:]
 	b.modified = true
 }
@@ -46,7 +73,7 @@ func (b *Buffer) DeleteRune(line, col int) {
 	}
 }
 
-// InsertNewline inserts a newline at position
+// InsertNewline inserts a newline at position with auto-indentation
 func (b *Buffer) InsertNewline(line, col int) {
 	if line < 0 || line >= len(b.lines) {
 		return
@@ -63,16 +90,50 @@ func (b *Buffer) InsertNewline(line, col int) {
 	leftPart := currentLine[:col]
 	rightPart := currentLine[col:]
 
-	b.lines[line] = leftPart
+	// --- Detect current indentation ---
+	currentIndent := countLeadingTabsOrSpaces(leftPart)
 
-	newLines := make([]string, len(b.lines)+1)
-	copy(newLines[:line+1], b.lines[:line+1])
-	newLines[line+1] = rightPart
-	copy(newLines[line+2:], b.lines[line+1:])
-	b.lines = newLines
+	// --- Determine if we should increase indent (after '{', '[', '(') ---
+	trimmedLeft := strings.TrimSpace(leftPart)
+	shouldIncrease := strings.HasSuffix(trimmedLeft, "{") ||
+		strings.HasSuffix(trimmedLeft, "[") ||
+		strings.HasSuffix(trimmedLeft, "(")
+
+	// --- Create the indentation strings ---
+	baseIndent := makeIndent(currentIndent)
+	increasedIndent := makeIndent(currentIndent + b.indentWidth())
+
+	if shouldIncrease {
+		// Split line into two
+		b.lines[line] = leftPart
+
+		// Construct the new lines properly
+		newLines := make([]string, 0, len(b.lines)+2)
+		newLines = append(newLines, b.lines[:line+1]...)
+		newLines = append(newLines, increasedIndent)       // middle indented line
+		newLines = append(newLines, baseIndent+rightPart)  // next line with closing brace or continuation
+		newLines = append(newLines, b.lines[line+1:]...)   // rest of document
+
+		b.lines = newLines
+		b.cursor.SetPosition(line, len(increasedIndent))
+	} else {
+		// Normal newline
+		b.lines[line] = leftPart
+		newLines := make([]string, 0, len(b.lines)+1)
+		newLines = append(newLines, b.lines[:line+1]...)
+		newLines = append(newLines, baseIndent+rightPart)
+		newLines = append(newLines, b.lines[line+1:]...)
+		b.lines = newLines
+	}
 
 	b.modified = true
 }
+
+// makeIndent builds a string of tabs/spaces matching indentation width
+func makeIndent(width int) string {
+	return strings.Repeat(" ", width)
+}
+
 
 // DeleteLine deletes an entire line
 func (b *Buffer) DeleteLine(line int) {
@@ -114,4 +175,51 @@ func (b *Buffer) InsertText(line, col int, text string) {
 	
 	b.InsertNewline(line+len(lines)-2, len(b.Line(line+len(lines)-2)))
 	b.SetLine(line+len(lines)-1, lines[len(lines)-1]+after)
+}
+
+
+// countLeadingTabsOrSpaces counts indentation width
+func countLeadingTabsOrSpaces(s string) int {
+	count := 0
+	for _, r := range s {
+		if r == '\t' {
+			count += 4 // treat tab as 4 spaces for alignment
+		} else if r == ' ' {
+			count++
+		} else {
+			break
+		}
+	}
+	return count
+}
+
+// indentWidth returns your desired indent width
+func (b *Buffer) indentWidth() int {
+	if b.tabSize > 0 {
+		return b.tabSize
+	}
+	return 4 // default 4 spaces if unspecified
+}
+
+// autoCloseTags creates the closing tag for html and xml keys
+func (b *Buffer) autoCloseTags(currentLine string, col int) string {
+	openStart := strings.LastIndex(currentLine[:col], "<")
+	if openStart != -1 && openStart < col {
+		tagContent := currentLine[openStart+1 : col]
+		// Extract tags (e.g. <div>, <p id="x"> -> div)
+		tagName := ""
+		for _, ch := range tagContent {
+			if ch == ' ' || ch == '\t' || ch == '>' || ch == '/' {
+				break
+			}
+			tagName += string(ch)
+		}
+		if tagName != "" && !strings.HasPrefix(tagName, "/") {
+			// Insert ">" + "</tagName>"
+			insert := ">" + "</" + tagName + ">"
+			return insert
+		}
+	}
+
+	return ">"
 }

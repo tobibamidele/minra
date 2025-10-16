@@ -6,6 +6,7 @@ type BufferReader interface {
 	LineCount() int
 }
 
+
 // MoveUp moves cursor up
 func (c *Cursor) MoveUp(buf BufferReader) {
 	if c.line > 0 {

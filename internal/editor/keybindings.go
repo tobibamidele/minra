@@ -72,7 +72,7 @@ func (e *Editor) handleNormalMode(msg tea.KeyMsg) tea.Cmd {
 	case "l", "right":
 		cur.MoveRight(buf)
 		e.viewport.AdjustScroll(cur)
-		case "k", "up":
+	case "k", "up":
 		cur.MoveUp(buf)
 		e.viewport.AdjustScroll(cur)
 	case "j", "down":
@@ -95,6 +95,12 @@ func (e *Editor) handleNormalMode(msg tea.KeyMsg) tea.Cmd {
 		e.viewport.AdjustScroll(cur)
 	case "b":
 		cur.MoveWordBackward(buf)
+		e.viewport.AdjustScroll(cur)
+	case "pgdown":
+		cur.MovePageDown(buf, e.getViewportHeight())
+		e.viewport.AdjustScroll(cur)
+	case "pgup":
+		cur.MovePageUp(buf, e.getViewportHeight())
 		e.viewport.AdjustScroll(cur)
 	case "y":
 		// Copy line
@@ -141,7 +147,7 @@ func (e *Editor) handleInsertMode(msg tea.KeyMsg) tea.Cmd {
 	case "enter":
 		buf.InsertNewline(cur.Line(), cur.Col())
 		cur.MoveDown(buf)
-		cur.MoveToLineStart()
+		// cur.MoveToLineStart() // <== removed coz it sets the position in InsertNewline
 		e.viewport.AdjustScroll(cur)
 	case "left":
 		cur.MoveLeft(buf)
@@ -161,6 +167,12 @@ func (e *Editor) handleInsertMode(msg tea.KeyMsg) tea.Cmd {
 	case "end":
 		cur.MoveToLineEnd(buf)
 		e.viewport.AdjustScroll(cur)
+	case "pgdown":
+		cur.MovePageDown(buf, e.getViewportHeight())
+		e.viewport.AdjustScroll(cur)
+	case "pgup":
+		cur.MovePageUp(buf, e.getViewportHeight())
+		e.viewport.AdjustScroll(cur)
 	case "tab":
 		// Insert spaces for tab
 		for i := 0; i < 4; i++ {
@@ -168,6 +180,7 @@ func (e *Editor) handleInsertMode(msg tea.KeyMsg) tea.Cmd {
 			cur.MoveRight(buf)
 		}
 		e.viewport.AdjustScroll(cur)
+
 	default:
 		// Insert regular characters
 		runes := []rune(msg.String())
@@ -176,7 +189,7 @@ func (e *Editor) handleInsertMode(msg tea.KeyMsg) tea.Cmd {
 			cur.MoveRight(buf)
 			e.viewport.AdjustScroll(cur)
 		}
-	}
+}
 	
 	return nil
 }

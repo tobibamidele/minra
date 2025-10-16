@@ -15,6 +15,7 @@ type Buffer struct {
 	cursor		*cursor.Cursor
 	history		*History
 	language	string
+	tabSize		int
 }
 
 // New creates an empty buffer
@@ -25,6 +26,7 @@ func New() *Buffer {
 		modified: false,
 		cursor: cursor.New(),
 		history: NewHistory(),
+		tabSize: 4,
 	}
 }
 

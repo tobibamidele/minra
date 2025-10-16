@@ -58,7 +58,6 @@ func New(rootDir string, config *Config) (*Editor, error) {
 		clipboard:    clipboard.New(),
 		sidebar:      sb,
 		statusBar:    statusbar.New(),
-		// viewport:     viewport.New(buf, 80, 24),
 		viewport:	  viewport.New(buf, viewport.ScreenWidth(), viewport.ScreenHeight()),
 		highlighter:  syntax.New(),
 		searchEngine: search.NewEngine(),

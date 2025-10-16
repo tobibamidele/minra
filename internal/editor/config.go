@@ -1,6 +1,6 @@
 package editor
 
-// Holds app configuration
+// Config holds app configuration
 type Config struct {
 	TabSize			int  	// Number of space for a tab
 	LineNumbers		bool	// Show line numbers
@@ -9,7 +9,7 @@ type Config struct {
 	Theme			string  // Theme to use
 }
 
-// Get the default editor config
+// DefaultConfig returns the default editor config
 func DefaultConfig() *Config {
 	return &Config{
 		TabSize: 4,

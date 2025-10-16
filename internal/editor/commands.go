@@ -32,7 +32,7 @@ func (e *Editor) SaveFile() tea.Cmd {
 	return nil
 }
 
-// // OpenFile opens a file
+// OpenFile opens a file
 func (e *Editor) OpenFile(path string) tea.Cmd {
 	content, err := fileio.ReadFile(path)
 	if err != nil {
@@ -45,7 +45,6 @@ func (e *Editor) OpenFile(path string) tea.Cmd {
 		e.statusMsg = fmt.Sprintf("Error: %v", err)
 		return nil
 	}
-	
 	// Create tab for buffer
 	e.tabMgr.NewTab(buf.ID(), filepath.Base(path))
 	
@@ -54,6 +53,7 @@ func (e *Editor) OpenFile(path string) tea.Cmd {
 	
 	// Detect language for syntax highlighting
 	e.statusMsg = fmt.Sprintf("Opened: %s", filepath.Base(path))
+	e.highlighter.ForExtension(filepath.Ext(path))
 	return nil
 }
 
