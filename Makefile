@@ -66,4 +66,4 @@ help:
 	@echo "  run      - Build and run the application"
 	@echo "  fmt      - Format code"
 	@echo "  test     - Run tests"
-	@echo "  deps     -
+	@echo "  deps     - Install deps"
