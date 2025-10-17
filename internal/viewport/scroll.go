@@ -11,7 +11,7 @@ func (v *Viewport) AdjustScroll(cur *cursor.Cursor) {
 	if cur.Line() >= v.scrollY+v.height {
 		v.scrollY = cur.Line() - v.height + 1
 	}
-	
+
 	// Horizontal scroll
 	displayCol := v.calculateDisplayCol(cur)
 	if displayCol < v.scrollX {
@@ -54,7 +54,7 @@ func (v *Viewport) CenterCursor(cur *cursor.Cursor) {
 func (v *Viewport) calculateDisplayCol(cur *cursor.Cursor) int {
 	line := v.buffer.Line(cur.Line())
 	displayCol := 0
-	
+
 	for i := 0; i < cur.Col() && i < len(line); i++ {
 		if line[i] == '\t' {
 			displayCol += v.tabSize - (displayCol % v.tabSize)
@@ -62,6 +62,6 @@ func (v *Viewport) calculateDisplayCol(cur *cursor.Cursor) int {
 			displayCol++
 		}
 	}
-	
+
 	return displayCol
 }

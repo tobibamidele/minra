@@ -2,7 +2,7 @@ package languages
 
 import (
 	"strings"
-	
+
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -65,7 +65,7 @@ func (b *Base) HighlightStrings(text string, style lipgloss.Style) string {
 	inString := false
 	quote := rune(0)
 	var result strings.Builder
-	
+
 	for i, ch := range text {
 		if !inString && (ch == '"' || ch == '\'') {
 			inString = true
@@ -91,9 +91,9 @@ func (b *Base) HighlightComments(text, commentStart string, style lipgloss.Style
 	if idx == -1 {
 		return text
 	}
-	
+
 	before := text[:idx]
 	comment := text[idx:]
-	
+
 	return before + style.Render(comment)
 }

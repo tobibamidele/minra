@@ -8,7 +8,7 @@ import (
 	"github.com/tobibamidele/minra/internal/app"
 )
 
-func main()  {
+func main() {
 	// Get the starting directory
 	startDir := "."
 	if len(os.Args) > 1 {

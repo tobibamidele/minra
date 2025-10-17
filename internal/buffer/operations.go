@@ -3,9 +3,9 @@ package buffer
 import "strings"
 
 var autoPairMap = map[rune]rune{
-	'{': '}',
-	'[': ']',
-	'(': ')',
+	'{':  '}',
+	'[':  ']',
+	'(':  ')',
 	'\'': '\'',
 	'"':  '"',
 }
@@ -110,9 +110,9 @@ func (b *Buffer) InsertNewline(line, col int) {
 		// Construct the new lines properly
 		newLines := make([]string, 0, len(b.lines)+2)
 		newLines = append(newLines, b.lines[:line+1]...)
-		newLines = append(newLines, increasedIndent)       // middle indented line
-		newLines = append(newLines, baseIndent+rightPart)  // next line with closing brace or continuation
-		newLines = append(newLines, b.lines[line+1:]...)   // rest of document
+		newLines = append(newLines, increasedIndent)      // middle indented line
+		newLines = append(newLines, baseIndent+rightPart) // next line with closing brace or continuation
+		newLines = append(newLines, b.lines[line+1:]...)  // rest of document
 
 		b.lines = newLines
 		b.cursor.SetPosition(line, len(increasedIndent))
@@ -134,13 +134,12 @@ func makeIndent(width int) string {
 	return strings.Repeat(" ", width)
 }
 
-
 // DeleteLine deletes an entire line
 func (b *Buffer) DeleteLine(line int) {
 	if line < 0 || line >= len(b.lines) {
 		return
 	}
-	
+
 	b.lines = append(b.lines[:line], b.lines[line+1:]...)
 	if len(b.lines) == 0 {
 		b.lines = []string{""}
@@ -151,7 +150,7 @@ func (b *Buffer) DeleteLine(line int) {
 // InsertText inserts text at position
 func (b *Buffer) InsertText(line, col int, text string) {
 	lines := strings.Split(text, "\n")
-	
+
 	if len(lines) == 1 {
 		// Single line insert
 		for _, r := range text {
@@ -160,23 +159,22 @@ func (b *Buffer) InsertText(line, col int, text string) {
 		}
 		return
 	}
-	
+
 	// Multi-line insert
 	currentLine := b.Line(line)
 	before := currentLine[:col]
 	after := currentLine[col:]
-	
+
 	b.SetLine(line, before+lines[0])
-	
+
 	for i := 1; i < len(lines)-1; i++ {
 		b.InsertNewline(line+i-1, len(b.Line(line+i-1)))
 		b.SetLine(line+i, lines[i])
 	}
-	
+
 	b.InsertNewline(line+len(lines)-2, len(b.Line(line+len(lines)-2)))
 	b.SetLine(line+len(lines)-1, lines[len(lines)-1]+after)
 }
-
 
 // countLeadingTabsOrSpaces counts indentation width
 func countLeadingTabsOrSpaces(s string) int {

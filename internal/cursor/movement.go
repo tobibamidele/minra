@@ -1,11 +1,9 @@
 package cursor
 
-
 type BufferReader interface {
 	Line(n int) string
 	LineCount() int
 }
-
 
 // MoveUp moves cursor up
 func (c *Cursor) MoveUp(buf BufferReader) {
@@ -99,17 +97,17 @@ func (c *Cursor) MovePageDown(buf BufferReader, pageSize int) {
 // MoveWordForward moves to next word
 func (c *Cursor) MoveWordForward(buf BufferReader) {
 	line := buf.Line(c.line)
-	
+
 	// Skip current word
 	for c.col < len(line) && !isWordBoundary(rune(line[c.col])) {
 		c.col++
 	}
-	
+
 	// Skip whitespace
 	for c.col < len(line) && isWordBoundary(rune(line[c.col])) {
 		c.col++
 	}
-	
+
 	// If at end of line, move to next line
 	if c.col >= len(line) && c.line < buf.LineCount()-1 {
 		c.line++
@@ -126,15 +124,15 @@ func (c *Cursor) MoveWordBackward(buf BufferReader) {
 		}
 		return
 	}
-	
+
 	line := buf.Line(c.line)
 	c.col--
-	
+
 	// Skip whitespace
 	for c.col > 0 && isWordBoundary(rune(line[c.col])) {
 		c.col--
 	}
-	
+
 	// Skip word
 	for c.col > 0 && !isWordBoundary(rune(line[c.col-1])) {
 		c.col--

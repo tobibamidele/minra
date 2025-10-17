@@ -5,9 +5,9 @@ import "github.com/charmbracelet/lipgloss"
 // Go provides Go syntax highlighting
 type Go struct {
 	*Base
-	keywords	[]string
-	types		[]string
-	constants	[]string
+	keywords  []string
+	types     []string
+	constants []string
 }
 
 // NewGo creates Go highlighter
@@ -51,7 +51,7 @@ func (g *Go) Highlight(line string) string {
 	result = g.HighlightStrings(result, g.stringStyle)
 
 	// Highlight comments
-	result = g.HighlightComments(result , "//", g.commentStyle)
+	result = g.HighlightComments(result, "//", g.commentStyle)
 
 	return lipgloss.NewStyle().Render(result)
 }

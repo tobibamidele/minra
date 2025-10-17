@@ -26,11 +26,11 @@ func (m *Manager) NewBuffer() *Buffer {
 	id := uuid.New().String()
 	buffer := New()
 	buffer.SetID(id)
-	
+
 	m.buffers[id] = buffer
 	m.bufferOrder = append(m.bufferOrder, id)
 	m.activeBuffer = id
-	
+
 	return buffer
 }
 
@@ -43,15 +43,15 @@ func (m *Manager) OpenBuffer(filepath, content string) (*Buffer, error) {
 			return b, nil
 		}
 	}
-	
+
 	id := uuid.New().String()
 	buffer := NewFromContent(content, filepath)
 	buffer.SetID(id)
-	
+
 	m.buffers[id] = buffer
 	m.bufferOrder = append(m.bufferOrder, id)
 	m.activeBuffer = id
-	
+
 	return buffer, nil
 }
 
@@ -68,16 +68,16 @@ func (m *Manager) CloseBuffer(id string) error {
 	if _, ok := m.buffers[id]; !ok {
 		return fmt.Errorf("buffer not found")
 	}
-	
+
 	delete(m.buffers, id)
-	
+
 	for i, bufID := range m.bufferOrder {
 		if bufID == id {
 			m.bufferOrder = append(m.bufferOrder[:i], m.bufferOrder[i+1:]...)
 			break
 		}
 	}
-	
+
 	if m.activeBuffer == id {
 		if len(m.bufferOrder) > 0 {
 			m.activeBuffer = m.bufferOrder[0]
@@ -85,7 +85,7 @@ func (m *Manager) CloseBuffer(id string) error {
 			m.activeBuffer = ""
 		}
 	}
-	
+
 	return nil
 }
 
@@ -94,11 +94,11 @@ func (m *Manager) NextBuffer() *Buffer {
 	if len(m.bufferOrder) <= 1 {
 		return m.ActiveBuffer()
 	}
-	
+
 	idx := m.findBufferIndex(m.activeBuffer)
 	nextIdx := (idx + 1) % len(m.bufferOrder)
 	m.activeBuffer = m.bufferOrder[nextIdx]
-	
+
 	return m.ActiveBuffer()
 }
 
@@ -107,11 +107,11 @@ func (m *Manager) PreviousBuffer() *Buffer {
 	if len(m.bufferOrder) <= 1 {
 		return m.ActiveBuffer()
 	}
-	
+
 	idx := m.findBufferIndex(m.activeBuffer)
 	prevIdx := (idx - 1 + len(m.bufferOrder)) % len(m.bufferOrder)
 	m.activeBuffer = m.bufferOrder[prevIdx]
-	
+
 	return m.ActiveBuffer()
 }
 

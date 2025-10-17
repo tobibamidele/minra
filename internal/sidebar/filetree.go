@@ -9,18 +9,18 @@ import (
 
 // FileNode represents a file or directory
 type FileNode struct {
-	Name		string
-	Path		string
-	IsDir		bool
-	Children	[]*FileNode
-	Expanded	bool
-	Level		int
+	Name     string
+	Path     string
+	IsDir    bool
+	Children []*FileNode
+	Expanded bool
+	Level    int
 }
 
 // FileTree represents the file tree
 type FileTree struct {
-	Root		*FileNode
-	flatList	[]*FileNode
+	Root     *FileNode
+	flatList []*FileNode
 }
 
 // NewFileTree creates a new file tree
@@ -31,11 +31,11 @@ func NewFileTree(rootPath string) (*FileTree, error) {
 	}
 
 	root := &FileNode{
-		Name: filepath.Base(absPath),
-		Path: absPath,
-		IsDir: true,
+		Name:     filepath.Base(absPath),
+		Path:     absPath,
+		IsDir:    true,
 		Expanded: true,
-		Level: 0,
+		Level:    0,
 	}
 
 	if err := loadDirectory(root); err != nil {
@@ -61,16 +61,16 @@ func loadDirectory(node *FileNode) error {
 
 	for _, entry := range entries {
 		// Skip hidden directories except .git
-		if strings.HasPrefix(entry.Name(), ".") && !strings.HasPrefix(entry.Name(), ".git"){
+		if strings.HasPrefix(entry.Name(), ".") && !strings.HasPrefix(entry.Name(), ".git") {
 			continue
 		}
 
 		child := &FileNode{
-			Name: entry.Name(),
-			Path: filepath.Join(node.Path, entry.Name()),
-			IsDir: entry.IsDir(),
+			Name:     entry.Name(),
+			Path:     filepath.Join(node.Path, entry.Name()),
+			IsDir:    entry.IsDir(),
 			Expanded: false,
-			Level: node.Level + 1,
+			Level:    node.Level + 1,
 		}
 
 		node.Children = append(node.Children, child)

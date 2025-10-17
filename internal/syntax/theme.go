@@ -4,13 +4,13 @@ import "github.com/charmbracelet/lipgloss"
 
 // Theme defines color scheme
 type Theme struct {
-	Keyword   lipgloss.Style
-	Type      lipgloss.Style
-	Constant  lipgloss.Style
-	String    lipgloss.Style
-	Comment   lipgloss.Style
-	Function  lipgloss.Style
-	Number    lipgloss.Style
+	Keyword  lipgloss.Style
+	Type     lipgloss.Style
+	Constant lipgloss.Style
+	String   lipgloss.Style
+	Comment  lipgloss.Style
+	Function lipgloss.Style
+	Number   lipgloss.Style
 }
 
 // DefaultTheme returns default theme

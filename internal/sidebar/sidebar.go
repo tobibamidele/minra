@@ -2,12 +2,12 @@ package sidebar
 
 // Sidebar represents the file browser sidebar
 type Sidebar struct {
-	tree           *FileTree
-	selectedIndex  int
-	visible        bool
-	width          int
-	height         int
-	scrollOffset   int
+	tree          *FileTree
+	selectedIndex int
+	visible       bool
+	width         int
+	height        int
+	scrollOffset  int
 }
 
 // NewSidebar creates a new sidebar
@@ -95,7 +95,7 @@ func (s *Sidebar) Refresh() error {
 	// store the current state of the expanded paths
 	expandedPaths := s.collectExpandedPaths(s.tree.Root)
 
-	// Refresh the tree 
+	// Refresh the tree
 	if err := s.tree.Refresh(); err != nil {
 		return err
 	}
@@ -120,16 +120,15 @@ func (s *Sidebar) Refresh() error {
 	return nil
 }
 
-
 // adjustScroll adjusts the scroll offset to keep selection visible
 func (s *Sidebar) adjustScroll() {
 	visibleLines := s.height - 2 // Account for borders
-	
+
 	// Scroll down if selection is below visible area
 	if s.selectedIndex >= s.scrollOffset+visibleLines {
 		s.scrollOffset = s.selectedIndex - visibleLines + 1
 	}
-	
+
 	// Scroll up if selection is above visible area
 	if s.selectedIndex < s.scrollOffset {
 		s.scrollOffset = s.selectedIndex
@@ -166,7 +165,7 @@ func (s *Sidebar) restoreExpandedPaths(node *FileNode, expandedPaths map[string]
 		// Load Children if not loaded before
 		if len(node.Children) == 0 {
 			s.tree.ToggleExpanded(node) // load the children
-			node.Expanded = true // Ensure children are expanded
+			node.Expanded = true        // Ensure children are expanded
 		}
 
 		for _, child := range node.Children {

@@ -110,4 +110,3 @@ func SafeSliceANSI(s string, start, end int) string {
 
 	return string(out)
 }
-

@@ -23,18 +23,18 @@ func NewJavaScript() *JavaScript {
 
 func (j *JavaScript) Highlight(line string) string {
 	result := line
-	
+
 	for _, kw := range j.keywords {
 		result = j.HighlightWord(result, kw, j.keywordStyle)
 	}
-	
+
 	for _, c := range j.constants {
 		result = j.HighlightWord(result, c, j.constantStyle)
 	}
-	
+
 	result = j.HighlightStrings(result, j.stringStyle)
 	result = j.HighlightComments(result, "//", j.commentStyle)
-	
+
 	return result
 }
 

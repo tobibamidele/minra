@@ -15,18 +15,18 @@ func (e *Editor) SaveFile() tea.Cmd {
 		e.statusMsg = "No buffer to save"
 		return nil
 	}
-	
+
 	if buf.Filepath() == "" {
 		e.statusMsg = "No file path set"
 		return nil
 	}
-	
+
 	err := fileio.WriteFile(buf.Filepath(), buf.Content())
 	if err != nil {
 		e.statusMsg = fmt.Sprintf("Error saving: %v", err)
 		return nil
 	}
-	
+
 	buf.SetModified(false)
 	e.statusMsg = fmt.Sprintf("Saved: %s", filepath.Base(buf.Filepath()))
 	return nil
@@ -39,7 +39,7 @@ func (e *Editor) OpenFile(path string) tea.Cmd {
 		e.statusMsg = fmt.Sprintf("Error opening: %v", err)
 		return nil
 	}
-	
+
 	buf, err := e.bufferMgr.OpenBuffer(path, content)
 	if err != nil {
 		e.statusMsg = fmt.Sprintf("Error: %v", err)
@@ -47,10 +47,10 @@ func (e *Editor) OpenFile(path string) tea.Cmd {
 	}
 	// Create tab for buffer
 	e.tabMgr.NewTab(buf.ID(), filepath.Base(path))
-	
+
 	// Update viewport
 	e.viewport.SetBuffer(buf)
-	
+
 	// Detect language for syntax highlighting
 	e.statusMsg = fmt.Sprintf("Opened: %s", filepath.Base(path))
 	e.highlighter.ForExtension(filepath.Ext(path))

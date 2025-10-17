@@ -8,8 +8,8 @@ import (
 
 // Replace replaces all search results with replacement text
 func Replace(
-	buf *buffer.Buffer, 
-	pattern, 
+	buf *buffer.Buffer,
+	pattern,
 	replacement string,
 	caseSensitive bool,
 ) int {

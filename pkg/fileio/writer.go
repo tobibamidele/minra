@@ -14,7 +14,7 @@ func WriteFile(filepath string, content string) error {
 			return err
 		}
 	}
-	
+
 	return os.WriteFile(filepath, []byte(content), 0644)
 }
 
@@ -34,12 +34,12 @@ func CreateFile(fp string) error {
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return err
 	}
-	
+
 	file, err := os.Create(fp)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
-	
+
 	return nil
 }

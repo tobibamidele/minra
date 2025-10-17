@@ -47,7 +47,7 @@ func IndentLevel(line string, tabSize int) int {
 func ExpandTabs(line string, tabSize int) string {
 	var result strings.Builder
 	col := 0
-	
+
 	for _, ch := range line {
 		if ch == '\t' {
 			spacesToAdd := tabSize - (col % tabSize)
@@ -60,6 +60,6 @@ func ExpandTabs(line string, tabSize int) string {
 			col++
 		}
 	}
-	
+
 	return result.String()
 }

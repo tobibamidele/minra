@@ -19,10 +19,10 @@ var (
 	// Text styles
 	BoldStyle = lipgloss.NewStyle().
 			Bold(true)
-	
+
 	ItalicStyle = lipgloss.NewStyle().
 			Italic(true)
-	
+
 	// Status bar styles
 	StatusBarStyle = lipgloss.NewStyle().
 			Background(lipgloss.Color("240")).

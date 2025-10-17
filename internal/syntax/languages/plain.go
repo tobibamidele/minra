@@ -1,7 +1,7 @@
 package languages
 
 // Plain is a plain text highlighter that does no highlighting
-type Plain struct{
+type Plain struct {
 	*Base
 }
 
@@ -11,6 +11,6 @@ func NewPlain() *Plain {
 }
 
 // Highlight return the line unchanged
-func(p *Plain) Highlight(line string) string {
+func (p *Plain) Highlight(line string) string {
 	return line
 }

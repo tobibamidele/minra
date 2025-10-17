@@ -63,36 +63,36 @@ func (w *SearchWidget) Render() string {
 	if !w.visible {
 		return ""
 	}
-	
+
 	var content strings.Builder
 	styleWidth := w.width - 4
-	
+
 	titleStyle := lipgloss.NewStyle().
 		Foreground(ui.ColorWarning).
 		Bold(true).
 		Align(lipgloss.Center).
 		Width(styleWidth)
-	
+
 	content.WriteString(titleStyle.Render("Search"))
 	content.WriteString("\n\n")
-	
+
 	inputStyle := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("230")).
 		Background(lipgloss.Color("236")).
 		Padding(0, 1).
 		Width(styleWidth)
-	
+
 	content.WriteString(inputStyle.Render(w.input))
 	content.WriteString("\n\n")
-	
+
 	helpStyle := lipgloss.NewStyle().
 		Foreground(ui.ColorComment).
 		Italic(true).
 		Align(lipgloss.Center).
 		Width(styleWidth)
-	
+
 	content.WriteString(helpStyle.Render("Enter: search | Esc: cancel"))
-	
+
 	boxStyle := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(ui.ColorWarning).
@@ -102,5 +102,5 @@ func (w *SearchWidget) Render() string {
 
 	box := boxStyle.Render(content.String())
 
-	return box 
+	return box
 }

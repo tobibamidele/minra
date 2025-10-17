@@ -2,15 +2,15 @@ package clipboard
 
 // Internal is in-memory clipboard
 type Internal struct {
-	content string
-	history []string
+	content    string
+	history    []string
 	maxHistory int
 }
 
 // NewInternal creates internal clipboard
 func NewInternal() *Internal {
 	return &Internal{
-		history: make([]string, 0),
+		history:    make([]string, 0),
 		maxHistory: 10,
 	}
 }

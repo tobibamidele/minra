@@ -8,27 +8,27 @@ import (
 
 // Result represents a search result
 type Result struct {
-	Line		int
-	Column		int
-	Length		int
+	Line   int
+	Column int
+	Length int
 }
 
 // Engine performs text search
 type Engine struct {
-	query			string
-	caseSensitive	bool
-	regex			bool
-	results			[]Result
-	currentIdx		int
+	query         string
+	caseSensitive bool
+	regex         bool
+	results       []Result
+	currentIdx    int
 }
 
 // NewEngine creates a new search engine
 func NewEngine() *Engine {
 	return &Engine{
 		caseSensitive: false,
-		regex: false,
-		results: make([]Result, 0),
-		currentIdx: -1,
+		regex:         false,
+		results:       make([]Result, 0),
+		currentIdx:    -1,
 	}
 }
 
@@ -72,7 +72,7 @@ func (e *Engine) Search(buf *buffer.Buffer) []Result {
 			}
 
 			e.results = append(e.results, Result{
-				Line: lineNum,
+				Line:   lineNum,
 				Column: col + idx,
 				Length: len(e.query),
 			})

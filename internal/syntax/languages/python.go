@@ -22,17 +22,17 @@ func NewPython() *Python {
 
 func (p *Python) Highlight(line string) string {
 	result := line
-	
+
 	for _, kw := range p.keywords {
 		result = p.HighlightWord(result, kw, p.keywordStyle)
 	}
-	
+
 	for _, c := range p.constants {
 		result = p.HighlightWord(result, c, p.constantStyle)
 	}
-	
+
 	result = p.HighlightStrings(result, p.stringStyle)
 	result = p.HighlightComments(result, "#", p.commentStyle)
-	
+
 	return result
 }

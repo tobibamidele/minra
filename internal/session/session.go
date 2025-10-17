@@ -2,12 +2,12 @@ package session
 
 // Session implements an editor session
 type Session struct {
-	Workspace	string
-	OpenFiles	[]string
-	ActiveFile	string
-	WindowSize 	struct {
-		Width	int
-		Height	int
+	Workspace  string
+	OpenFiles  []string
+	ActiveFile string
+	WindowSize struct {
+		Width  int
+		Height int
 	}
 }
 

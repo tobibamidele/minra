@@ -8,25 +8,25 @@ import (
 
 // Buffer represents a text buffer
 type Buffer struct {
-	id			string
-	lines		[]string
-	filepath	string
-	modified	bool
-	cursor		*cursor.Cursor
-	history		*History
-	language	string
-	tabSize		int
+	id       string
+	lines    []string
+	filepath string
+	modified bool
+	cursor   *cursor.Cursor
+	history  *History
+	language string
+	tabSize  int
 }
 
 // New creates an empty buffer
 func New() *Buffer {
 	return &Buffer{
-		lines: []string{""},
+		lines:    []string{""},
 		filepath: "",
 		modified: false,
-		cursor: cursor.New(),
-		history: NewHistory(),
-		tabSize: 4,
+		cursor:   cursor.New(),
+		history:  NewHistory(),
+		tabSize:  4,
 	}
 }
 
@@ -38,11 +38,11 @@ func NewFromContent(content string, filepath string) *Buffer {
 	}
 
 	return &Buffer{
-		lines: lines,
+		lines:    lines,
 		filepath: filepath,
 		modified: false,
-		cursor: cursor.New(),
-		history: NewHistory(),
+		cursor:   cursor.New(),
+		history:  NewHistory(),
 	}
 }
 

@@ -12,127 +12,6 @@ import (
 	"github.com/tobibamidele/minra/pkg/utils"
 )
 
-// // Render renders the viewport
-// func (v *Viewport) Render(highlighter *syntax.Highlighter, cur *cursor.Cursor, mode Mode) string {
-// 	var b strings.Builder
-//
-// 	startLine := v.scrollY
-// 	endLine := v.scrollY + v.height
-// 	if endLine > v.buffer.LineCount() {
-// 		endLine = v.buffer.LineCount()
-// 	}
-//
-// 	currentLineStyle := lipgloss.NewStyle().Background(lipgloss.Color("236"))
-// 	lineNumStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
-// 	activeLineNumStyle := lipgloss.NewStyle().
-// 		Background(lipgloss.Color("236")).
-// 		Foreground(lipgloss.Color("220")).
-// 		Bold(true)
-//
-// 	// Style for highlighting matching brackets
-// 	bracketStyle := lipgloss.NewStyle().
-// 		Foreground(lipgloss.Color("220")).
-// 		Background(lipgloss.Color("237")).
-// 		Bold(true)
-//
-// 	for lineNum := startLine; lineNum < endLine; lineNum++ {
-// 		rawLine := v.buffer.Line(lineNum)
-// 		isCursorLine := lineNum == cur.Line()
-//
-// 		// --- Line number ---
-// 		if v.lineNumbers {
-// 			lineNumStr := fmt.Sprintf("%4d ", lineNum+1)
-// 			if isCursorLine {
-// 				b.WriteString(activeLineNumStyle.Render(lineNumStr))
-// 			} else {
-// 				b.WriteString(lineNumStyle.Render(lineNumStr))
-// 			}
-// 		}
-//
-// 		// --- Expand tabs before highlighting ---
-// 		displayLine := v.expandTabs(rawLine)
-//
-// 		// --- Apply syntax highlighting ---
-// 		if highlighter != nil {
-// 			displayLine = highlighter.Highlight(displayLine)
-// 		}
-//
-// 		// --- Highlight matching brackets if cursor is on one ---
-// 		if isCursorLine && (mode == ModeNormal || mode == ModeInsert) {
-// 			runes := []rune(rawLine)
-// 			cursorCol := cur.Col()
-// 			if cursorCol >= 0 && cursorCol < len(runes) && matchers.IsBracket(runes[cursorCol]) {
-// 				matchIdx := matchers.FindMatchingBracket(rawLine, cursorCol)
-// 				if matchIdx != -1 {
-// 					displayLine = applyBracketHighlight(displayLine, cursorCol, matchIdx, bracketStyle)
-// 				}
-// 			}
-// 		}
-//
-// 		// --- Handle horizontal scrolling safely (ANSI aware) ---
-// 		visibleStart := v.scrollX
-// 		visibleEnd := v.scrollX + v.width
-// 		visibleLine := utils.SafeSliceANSI(displayLine, visibleStart, visibleEnd)
-//
-// 		// --- Draw cursor ---
-// 		if isCursorLine && (mode == ModeInsert || mode == ModeNormal) {
-// 			displayCursorPos := v.calculateDisplayCol(cur)
-// 			relativeCursorPos := displayCursorPos - v.scrollX
-//
-// 			plainLine := utils.StripANSI(visibleLine)
-// 			runeCount := utf8.RuneCountInString(plainLine)
-// 			if relativeCursorPos > runeCount {
-// 				relativeCursorPos = runeCount
-// 			}
-//
-// 			if relativeCursorPos >= 0 {
-// 				before := utils.SafeSliceANSI(visibleLine, 0, relativeCursorPos)
-// 				after := utils.SafeSliceANSI(visibleLine, relativeCursorPos+1, utils.VisibleWidth(visibleLine))
-//
-// 				var cursorStyle lipgloss.Style
-// 				if mode == ModeInsert {
-// 					cursorStyle = lipgloss.NewStyle().
-// 						Background(lipgloss.Color("230")). // pale yellow
-// 						Foreground(lipgloss.Color("0"))    // black text
-// 				} else {
-// 					cursorStyle = lipgloss.NewStyle().
-// 						Background(lipgloss.Color("240")). // gray block
-// 						Foreground(lipgloss.Color("230"))
-// 				}
-//
-// 				cursorChar := " "
-// 				if relativeCursorPos < runeCount {
-// 					runes := []rune(plainLine)
-// 					cursorChar = string(runes[relativeCursorPos])
-// 				}
-//
-// 				visibleLine = before + cursorStyle.Render(cursorChar) + after
-// 			}
-// 		}
-//
-// 		// --- Highlight entire line (in both normal and insert mode) ---
-// 		if isCursorLine {
-// 			visibleLine = currentLineStyle.Render(visibleLine)
-// 		}
-//
-// 		b.WriteString(visibleLine)
-// 		b.WriteString("\n")
-// 	}
-//
-// 	// --- Fill remaining lines ---
-// 	for i := endLine - startLine; i < v.height; i++ {
-// 		if v.lineNumbers {
-// 			b.WriteString(lineNumStyle.Render("   ~ "))
-// 		} else {
-// 			b.WriteString(lipgloss.NewStyle().
-// 				Foreground(lipgloss.Color("240")).Render("~"))
-// 		}
-// 		b.WriteString("\n")
-// 	}
-//
-// 	return b.String()
-// }
-
 func (v *Viewport) Render(highlighter *syntax.Highlighter, cur *cursor.Cursor, mode Mode) string {
 	var b strings.Builder
 
@@ -144,7 +23,7 @@ func (v *Viewport) Render(highlighter *syntax.Highlighter, cur *cursor.Cursor, m
 
 	// --- Styles ---
 	currentLineStyle := lipgloss.NewStyle().Background(lipgloss.Color("236"))
-	lineNumStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
+	lineNumStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#ffffff")).Background(lipgloss.Color("#232e33"))
 	activeLineNumStyle := lipgloss.NewStyle().
 		Background(lipgloss.Color("236")).
 		Foreground(lipgloss.Color("220")).
@@ -176,7 +55,7 @@ func (v *Viewport) Render(highlighter *syntax.Highlighter, cur *cursor.Cursor, m
 		bracketA, bracketB := -1, -1
 		if isCursorLine && (mode == ModeInsert || mode == ModeNormal) {
 			runes := []rune(rawLine)
-				if cur.Col() >= 0 && cur.Col() < len(runes) && matchers.IsBracket(runes[cur.Col()]) {
+			if cur.Col() >= 0 && cur.Col() < len(runes) && matchers.IsBracket(runes[cur.Col()]) {
 				match := matchers.FindMatchingBracket(rawLine, cur.Col())
 				if match != -1 {
 					bracketA, bracketB = cur.Col(), match
@@ -248,7 +127,6 @@ func (v *Viewport) Render(highlighter *syntax.Highlighter, cur *cursor.Cursor, m
 	return b.String()
 }
 
-
 // --- Highlight helper ---
 
 func applyBracketHighlight(line string, idx1, idx2 int, style lipgloss.Style) string {
@@ -291,4 +169,3 @@ func (v *Viewport) expandTabs(line string) string {
 	}
 	return result.String()
 }
-

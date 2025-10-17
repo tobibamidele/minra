@@ -14,7 +14,20 @@ func (e *Editor) HandleKeyPress(msg tea.KeyMsg) tea.Cmd {
 	// Global shortcuts
 	switch msg.String() {
 	case "ctrl+c", "ctrl+q":
-		return tea.Quit
+		switch e.mode {
+			case viewport.ModeRename:
+				e.renameWidget.Hide()
+				e.mode = viewport.ModeSidebar
+				e.statusMsg = "Cancelled"
+				return nil
+			case viewport.ModeSearch:
+				e.searchWidget.Hide()
+				e.mode = viewport.ModeSidebar
+				e.statusMsg = "Cancelled"
+				return nil
+			default:
+				return tea.Quit
+		}
 	case "ctrl+s":
 		return e.SaveFile()
 	case "ctrl+o":
@@ -62,7 +75,7 @@ func (e *Editor) handleNormalMode(msg tea.KeyMsg) tea.Cmd {
 		e.mode = viewport.ModeInsert
 		e.statusMsg = "-- INSERT --"
 	case "e":
-		if e.sidebar.IsVisible(){
+		if e.sidebar.IsVisible() {
 			e.mode = viewport.ModeSidebar
 			e.statusMsg = "-- SIDEBAR --"
 		}
@@ -119,7 +132,7 @@ func (e *Editor) handleNormalMode(msg tea.KeyMsg) tea.Cmd {
 		e.searchWidget.Show()
 		e.statusMsg = "-- SEARCH --"
 	}
-	
+
 	return nil
 }
 
@@ -128,9 +141,9 @@ func (e *Editor) handleInsertMode(msg tea.KeyMsg) tea.Cmd {
 	if buf == nil {
 		return nil
 	}
-	
+
 	cur := buf.Cursor()
-	
+
 	switch msg.String() {
 	case "esc":
 		e.mode = viewport.ModeNormal
@@ -189,8 +202,8 @@ func (e *Editor) handleInsertMode(msg tea.KeyMsg) tea.Cmd {
 			cur.MoveRight(buf)
 			e.viewport.AdjustScroll(cur)
 		}
-}
-	
+	}
+
 	return nil
 }
 
@@ -221,7 +234,7 @@ func (e *Editor) handleSidebarMode(msg tea.KeyMsg) tea.Cmd {
 			}
 		}
 	}
-	
+
 	return nil
 }
 
@@ -231,6 +244,8 @@ func (e *Editor) handleRenameMode(msg tea.KeyMsg) tea.Cmd {
 		e.renameWidget.Hide()
 		e.mode = viewport.ModeSidebar
 		e.statusMsg = "Cancelled"
+	case "ctrl+c":
+		e.renameWidget.Hide()
 	case "enter":
 		newName := e.renameWidget.GetInput()
 		if newName != "" {
@@ -254,7 +269,7 @@ func (e *Editor) handleRenameMode(msg tea.KeyMsg) tea.Cmd {
 			e.renameWidget.InsertRune(runes[0])
 		}
 	}
-	
+
 	return nil
 }
 
@@ -275,7 +290,7 @@ func (e *Editor) handleSearchMode(msg tea.KeyMsg) tea.Cmd {
 			e.searchWidget.InsertRune(runes[0])
 		}
 	}
-	
+
 	return nil
 }
 

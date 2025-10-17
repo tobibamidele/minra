@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/tobibamidele/minra/internal/ui"
 )
 
 // Render renders the sidebar
@@ -20,11 +21,11 @@ func (s *Sidebar) Render() string {
 	selectedStyle := lipgloss.NewStyle().
 		Background(lipgloss.Color("240")).
 		Foreground(lipgloss.Color("230"))
-	
+
 	dirStyle := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("39")).
 		Bold(true)
-	
+
 	// fileStyle := lipgloss.NewStyle().
 	// 	Foreground(lipgloss.Color("252"))
 
@@ -34,7 +35,7 @@ func (s *Sidebar) Render() string {
 		Bold(true).
 		Width(s.width - 2).
 		Align(lipgloss.Center)
-	
+
 	b.WriteString(titleStyle.Render("Files"))
 	b.WriteString("\n")
 
@@ -46,7 +47,7 @@ func (s *Sidebar) Render() string {
 
 	for i := s.scrollOffset; i < endIdx; i++ {
 		node := flatList[i]
-		
+
 		// Build the line with indentation
 		indent := strings.Repeat("  ", node.Level)
 		icon, iconColor := "", "250"
@@ -55,9 +56,9 @@ func (s *Sidebar) Render() string {
 		} else {
 			icon, iconColor = GetFileIcon(node.Name)
 		}
-		
+
 		lineText := indent + icon + " " + node.Name
-		
+
 		// Truncate if too long
 		maxLen := s.width
 		if len(lineText) > maxLen {
@@ -90,9 +91,10 @@ func (s *Sidebar) Render() string {
 	borderStyle := lipgloss.NewStyle().
 		Border(lipgloss.NormalBorder()).
 		BorderForeground(lipgloss.Color("240")).
+		// BorderBackground(ui.ColorBackground).
 		Width(s.width - 2).
 		Height(s.height - 2)
+		// Background(ui.ColorBackground)
 
-	return borderStyle.Render(b.String())
+	return lipgloss.NewStyle().Background(ui.ColorBackground).Render(borderStyle.Render(b.String()))
 }
-

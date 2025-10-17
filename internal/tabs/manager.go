@@ -22,11 +22,11 @@ func NewManager() *Manager {
 func (m *Manager) NewTab(bufferID, title string) *Tab {
 	tab := New(bufferID, title)
 	tab.SetID(uuid.New().String())
-	
+
 	m.tabs = append(m.tabs, tab)
 	m.activeIdx = len(m.tabs) - 1
 	m.updateActiveStates()
-	
+
 	return tab
 }
 
