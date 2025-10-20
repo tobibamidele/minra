@@ -27,4 +27,14 @@ var (
 	StatusBarStyle = lipgloss.NewStyle().
 			Background(lipgloss.Color("240")).
 			Foreground(lipgloss.Color("230"))
+
+	// Active cursor style
+	ActiveCursorStyle = lipgloss.NewStyle().
+				Background(lipgloss.Color("230")).
+				Foreground(lipgloss.Color("0"))
+
+	// Inactive cursor style
+	InactiveCursorStyle = lipgloss.NewStyle().
+				Background(lipgloss.Color("240")).
+				Foreground(lipgloss.Color("230"))
 )

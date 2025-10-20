@@ -12,35 +12,35 @@ import (
 // HandleKeyPress handles keyboard input
 func (e *Editor) HandleKeyPress(msg tea.KeyMsg) tea.Cmd {
 	// Global shortcuts
-	switch msg.String() {
-	case "ctrl+c", "ctrl+q":
+	switch KeyType(msg.String()) {
+	case KeyQuit, KeyInterrupt:
 		switch e.mode {
-			case viewport.ModeRename:
-				e.renameWidget.Hide()
-				e.mode = viewport.ModeSidebar
-				e.statusMsg = "Cancelled"
-				return nil
-			case viewport.ModeSearch:
-				e.searchWidget.Hide()
-				e.mode = viewport.ModeSidebar
-				e.statusMsg = "Cancelled"
-				return nil
-			default:
-				return tea.Quit
+		case viewport.ModeRename:
+			e.renameWidget.Hide()
+			e.mode = viewport.ModeSidebar
+			e.statusMsg = "Cancelled"
+			return nil
+		case viewport.ModeSearch:
+			e.searchWidget.Hide()
+			e.mode = viewport.ModeSidebar
+			e.statusMsg = "Cancelled"
+			return nil
+		default:
+			return tea.Quit
 		}
-	case "ctrl+s":
+	case KeySave:
 		return e.SaveFile()
-	case "ctrl+o":
+	case KeyOpen:
 		return e.openSelectedFile()
-	case "ctrl+b":
+	case KeySidebar:
 		e.sidebar.Toggle()
 		return nil
-	case "ctrl+n":
+	case KeyNew:
 		return e.NewFile()
-	case "alt+>", "alt+.":
+	case KeyNextBuf, "alt+.":
 		e.NextBuffer()
 		return nil
-	case "alt+<", "alt+,":
+	case KeyPrevBuf, "alt+,":
 		e.PreviousBuffer()
 		return nil
 	}
@@ -70,64 +70,67 @@ func (e *Editor) handleNormalMode(msg tea.KeyMsg) tea.Cmd {
 
 	cur := buf.Cursor()
 
-	switch msg.String() {
-	case "i":
+	switch KeyType(msg.String()) {
+	case KeyInsert:
 		e.mode = viewport.ModeInsert
 		e.statusMsg = "-- INSERT --"
-	case "e":
+	case KeySidebarMode:
 		if e.sidebar.IsVisible() {
 			e.mode = viewport.ModeSidebar
 			e.statusMsg = "-- SIDEBAR --"
 		}
-	case "h", "left":
+	case KeyH, KeyLeft:
 		cur.MoveLeft(buf)
 		e.viewport.AdjustScroll(cur)
-	case "l", "right":
+	case KeyL, KeyRight:
 		cur.MoveRight(buf)
 		e.viewport.AdjustScroll(cur)
-	case "k", "up":
+	case KeyK, KeyUp:
 		cur.MoveUp(buf)
 		e.viewport.AdjustScroll(cur)
-	case "j", "down":
+	case KeyJ, KeyDown:
 		cur.MoveDown(buf)
 		e.viewport.AdjustScroll(cur)
-	case "0", "home":
+	case Key0, KeyHome:
 		cur.MoveToLineStart()
 		e.viewport.AdjustScroll(cur)
-	case "$", "end":
+	case KeyDollar, KeyEnd:
 		cur.MoveToLineEnd(buf)
 		e.viewport.AdjustScroll(cur)
-	case "g":
+	case KeyBackspace:
+		cur.MoveLeft(buf)
+		e.viewport.AdjustScroll(cur)
+	case KeyG:
 		cur.MoveToBufferStart()
 		e.viewport.AdjustScroll(cur)
-	case "G":
+	case KeyBigG:
 		cur.MoveToBufferEnd(buf)
 		e.viewport.AdjustScroll(cur)
-	case "w":
+	case KeyW:
 		cur.MoveWordForward(buf)
 		e.viewport.AdjustScroll(cur)
-	case "b":
+	case KeyB:
 		cur.MoveWordBackward(buf)
 		e.viewport.AdjustScroll(cur)
-	case "pgdown":
+	case KeyPageDown:
 		cur.MovePageDown(buf, e.getViewportHeight())
 		e.viewport.AdjustScroll(cur)
-	case "pgup":
+	case KeyPageUp:
 		cur.MovePageUp(buf, e.getViewportHeight())
 		e.viewport.AdjustScroll(cur)
-	case "y":
+	case KeyY:
 		// Copy line
 		line := buf.Line(cur.Line())
 		e.clipboard.Copy(line)
 		e.statusMsg = "Copied line"
-	case "p":
+	case KeyP:
 		// Paste
 		text, _ := e.clipboard.Paste()
 		if text != "" {
 			e.pasteText(text)
 			e.statusMsg = "Pasted"
 		}
-	case "/":
+	case KeySlash:
 		e.mode = viewport.ModeSearch
 		e.searchWidget.Show()
 		e.statusMsg = "-- SEARCH --"
@@ -144,11 +147,11 @@ func (e *Editor) handleInsertMode(msg tea.KeyMsg) tea.Cmd {
 
 	cur := buf.Cursor()
 
-	switch msg.String() {
-	case "esc":
+	switch KeyType(msg.String()) {
+	case KeyEscape:
 		e.mode = viewport.ModeNormal
 		e.statusMsg = "-- NORMAL --"
-	case "backspace":
+	case KeyBackspace:
 		buf.DeleteRune(cur.Line(), cur.Col())
 		if cur.Col() > 0 {
 			cur.MoveLeft(buf)
@@ -157,38 +160,45 @@ func (e *Editor) handleInsertMode(msg tea.KeyMsg) tea.Cmd {
 			cur.MoveToLineEnd(buf)
 		}
 		e.viewport.AdjustScroll(cur)
-	case "enter":
+	case KeyEnter:
 		buf.InsertNewline(cur.Line(), cur.Col())
 		cur.MoveDown(buf)
 		// cur.MoveToLineStart() // <== removed coz it sets the position in InsertNewline
 		e.viewport.AdjustScroll(cur)
-	case "left":
+	case KeyLeft:
 		cur.MoveLeft(buf)
 		e.viewport.AdjustScroll(cur)
-	case "right":
+	case KeyRight:
 		cur.MoveRight(buf)
 		e.viewport.AdjustScroll(cur)
-	case "up":
+	case KeyUp:
 		cur.MoveUp(buf)
 		e.viewport.AdjustScroll(cur)
-	case "down":
+	case KeyDown:
 		cur.MoveDown(buf)
 		e.viewport.AdjustScroll(cur)
-	case "home":
+	case KeyHome:
 		cur.MoveToLineStart()
 		e.viewport.AdjustScroll(cur)
-	case "end":
+	case KeyEnd:
 		cur.MoveToLineEnd(buf)
 		e.viewport.AdjustScroll(cur)
-	case "pgdown":
+	case KeyPageDown:
 		cur.MovePageDown(buf, e.getViewportHeight())
 		e.viewport.AdjustScroll(cur)
-	case "pgup":
+	case KeyPageUp:
 		cur.MovePageUp(buf, e.getViewportHeight())
 		e.viewport.AdjustScroll(cur)
+	case KeyPaste:
+		// Paste from clipboard
+		text, _ := e.clipboard.Paste()
+		if text != "" {
+			e.pasteText(text)
+			e.statusMsg = "Pasted"
+		}
 	case "tab":
 		// Insert spaces for tab
-		for i := 0; i < 4; i++ {
+		for i := 0; i < e.viewport.TabSize(); i++ {
 			buf.InsertRune(cur.Line(), cur.Col(), ' ')
 			cur.MoveRight(buf)
 		}

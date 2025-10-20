@@ -9,6 +9,7 @@ import (
 	"github.com/tobibamidele/minra/internal/cursor"
 	"github.com/tobibamidele/minra/internal/syntax"
 	"github.com/tobibamidele/minra/internal/syntax/matchers"
+	"github.com/tobibamidele/minra/internal/ui"
 	"github.com/tobibamidele/minra/pkg/utils"
 )
 
@@ -89,11 +90,11 @@ func (v *Viewport) Render(highlighter *syntax.Highlighter, cur *cursor.Cursor, m
 			before := utils.SafeSliceANSI(visibleLine, 0, relativeCursorPos)
 			after := utils.SafeSliceANSI(visibleLine, relativeCursorPos+1, utils.VisibleWidth(visibleLine))
 
-			cursorStyle := lipgloss.NewStyle()
+			var cursorStyle lipgloss.Style
 			if mode == ModeInsert {
-				cursorStyle = cursorStyle.Background(lipgloss.Color("230")).Foreground(lipgloss.Color("0"))
+				cursorStyle = ui.ActiveCursorStyle
 			} else {
-				cursorStyle = cursorStyle.Background(lipgloss.Color("240")).Foreground(lipgloss.Color("230"))
+				cursorStyle = ui.InactiveCursorStyle
 			}
 
 			cursorChar := " "
@@ -106,8 +107,12 @@ func (v *Viewport) Render(highlighter *syntax.Highlighter, cur *cursor.Cursor, m
 		}
 
 		if isCursorLine {
-			// currentLineStyle = currentLineStyle.Foreground(lipgloss.Color("230"))
 			visibleLine = currentLineStyle.Width(v.Width()).Render(visibleLine)
+		} else { // Render lines with background
+			visibleLine = lipgloss.NewStyle().
+				Background(ui.ColorBackground).
+				Width(v.Width()).
+				Render(visibleLine)
 		}
 
 		b.WriteString(visibleLine)

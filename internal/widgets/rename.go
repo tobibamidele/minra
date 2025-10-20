@@ -104,10 +104,6 @@ func (w *RenameWidget) Render(width int) string {
 		return ""
 	}
 
-	cursorStyle := lipgloss.NewStyle().
-		Background(lipgloss.Color("230")).
-		Foreground(lipgloss.Color("0"))
-
 	styleWidth := width - 10 // Account for borders/padding
 	maxInputWidth := styleWidth
 
@@ -139,12 +135,12 @@ func (w *RenameWidget) Render(width int) string {
 		before := visibleInput[:cursorVisiblePos]
 		after := visibleInput[cursorVisiblePos:]
 		cursorChar := string(visibleInput[cursorVisiblePos])
-		visibleInput = before + cursorStyle.Render(cursorChar)
+		visibleInput = before + ui.ActiveCursorStyle.Render(cursorChar)
 		if len(after) > 1 {
 			visibleInput += after[1:]
 		}
 	} else if cursorVisiblePos == len(visibleInput) {
-		visibleInput = visibleInput + cursorStyle.Render(" ")
+		visibleInput = visibleInput + ui.ActiveCursorStyle.Render(" ")
 	}
 
 	// --- Build the visual box ---
@@ -152,7 +148,7 @@ func (w *RenameWidget) Render(width int) string {
 
 	// Title
 	titleStyle := lipgloss.NewStyle().
-		Foreground(ui.ColorAccent).
+		// Foreground(ui.ColorAccent).
 		Bold(true).
 		Align(lipgloss.Center).
 		Width(styleWidth)
@@ -175,5 +171,6 @@ func (w *RenameWidget) Render(width int) string {
 	content.WriteString("\n")
 	content.WriteString(inputStyle.Render(visibleInput))
 
-	return boxStyle.Render(content.String())
+	// return boxStyle.Render(content.String())
+	return lipgloss.Place(width, 5, lipgloss.Left, lipgloss.Bottom, boxStyle.Render(content.String()))
 }

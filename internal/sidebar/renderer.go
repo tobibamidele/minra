@@ -54,7 +54,8 @@ func (s *Sidebar) Render() string {
 		if node.IsDir {
 			icon = GetDirectoryIcon(node)
 		} else {
-			icon, iconColor = GetFileIcon(node.Name)
+			i := GetFileIcon(node.Name)
+			icon, iconColor = i.Glyph, i.Color
 		}
 
 		lineText := indent + icon + " " + node.Name

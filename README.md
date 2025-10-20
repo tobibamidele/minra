@@ -137,8 +137,10 @@ minra/
 ## TODO
 - [X] Fix cursor
 - [X] Fix tab identification - Currently doesn't identify tabs
-- [ ] Add auto closing of brackets
-- [ ] Fix ANSI escape codes messing up editor
+- [ ] Fix background disappearing behind text
+- [X] Add auto closing of brackets
+- [X] Fix ANSI escape codes messing up editor
+- [ ] Multi line cursor
 - [ ] Add auto-completion suggestions
 - [ ] Add file parser to allow collapsing blocks of a file
 - [ ] Add create file support

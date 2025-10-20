@@ -93,7 +93,7 @@ func (e *Editor) CloseFile() tea.Cmd {
 		e.viewport.SetBuffer(newBuf)
 	}
 
-	e.statusMsg = fmt.Sprintf("File closed")
+	e.statusMsg = "File closed"
 	return nil
 }
 

@@ -7,122 +7,86 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-var extToIconMap = map[string]string{
-	".py":     "\ue606",
-	".js":     "\ue74e",
-	".ts":     "\ue628",
-	".java":   "\ue256",
-	".c":      "\ue61e",
-	".h":      "\ue61e",
-	".cpp":    "\ue61d",
-	".hpp":    "\ue61e",
-	".cs":     "\ue648",
-	".go":     "\ue627",
-	".rs":     "\ue7a8",
-	".rb":     "\ue21e",
-	".php":    "\ue608",
-	".html":   "\ue736",
-	".css":    "\ue749",
-	".swift":  "\ue755",
-	".kt":     "\ue634",
-	".dart":   "\ue798",
-	".scala":  "\ue737",
-	".pl":     "\ue67a",
-	".lua":    "\ue620",
-	".sh":     "\ue795",
-	".r":      "\ue67a",
-	".elixir": "\ue62d",
-	".md":     "\ue73e",
-	".json":   "\ue60b",
+type Icon struct {
+	Glyph string
+	Color string
 }
 
-var extToIconColor = map[string]string{
-	".go":      "39",  // bright blue
-	".py":      "226", // yellow
-	".js":      "220", // golden yellow
-	".json":    "220",
-	".ts":      "33",  // light blue
-	".java":    "208", // orange
-	".rs":      "208", // rust orange
-	".rb":      "197", // red
-	".php":     "129", // purple
-	".html":    "202", // orange
-	".css":     "39",  // blue
-	".dart":    "39",
-	".swift":   "214", // orange-yellow
-	".md":      "244", // gray
-	".sh":      "34",  // green
-	".c":       "45",  // cyan
-	".cpp":     "45",
-	"makefile": "244",
+var IconRegistry = struct {
+	Extensions map[string]Icon
+	Filenames  map[string]Icon
+	Git        map[string]Icon
+	Folders    map[string]Icon
+}{
+	Extensions: map[string]Icon{
+		".go":			 {"\ue627", "39"},
+		".py":			 {"\ue606", "226"},
+		".js":			 {"\uf2ee", "220"},
+		".ts":			 {"\ue69d", "33"},
+		".tsx":			 {"\ued46", "33"},
+		".jsx":			 {"\ued46", "33"},
+		".json":		 {"\ue60b", "220"},
+		".java":		 {"\ue256", "208"},
+		".rs":			 {"\ue7a8", "208"},
+		".rb":			 {"\ue21e", "197"},
+		".r":			 {"\ue881", "39"},
+		".swift":		 {"\ue755", "202"},
+		".php":			 {"\ue608", "129"},
+		".html":		 {"\ue736", "202"},
+		".css":			 {"\ue749", "39"},
+		".sh":			 {"\ue795", "34"},
+		".yaml":		 {"\ue60b", "33"},
+		".yml":			 {"\ue60b", "33"},
+		".toml":		 {"\ue60b", "250"},
+		".ini":			 {"\ue615", "250"},
+		".lock":		 {"\uf023", "244"},
+		".log":			 {"\uf18d", "244"},
+		".md":			 {"\ue73e", "244"},
+	},
+
+	Filenames: map[string]Icon{
+		".gitignore":     {"\ue702", "196"},
+		".gitattributes": {"\ue702", "196"},
+		"commit_editmsg": {"\ue702", "196"},
+		".env":           {"\ue702", "250"},
+		"makefile":       {"\ue673", "244"},
+		"dockerfile":     {"\uf308", "33"},
+		"license":        {"\uf316", "250"},
+		"go.mod":         {"\ue627", "39"},
+		"go.sum":         {"\ue627", "39"},
+		"cargo.toml":     {"\ue7a8", "208"},
+		"package.json":   {"\ue60b", "220"},
+		"requirements.txt": {"\ue606", "226"},
+	},
+
+	Git: map[string]Icon{
+		"branch": {"\uf418", "39"}, // 
+		"merge":  {"\ue727", "208"}, // 
+		"tag":    {"\uf02b", "220"}, // 
+		"stash":  {"\uf01c", "244"},
+		"detached": {"\uf126", "244"},
+	},
+
+	Folders: map[string]Icon{
+		"root":  {"\ue5fc", "250"},
+		"git":   {"\ue5fb", "196"},
+		"open":  {"\ue5fe", "250"},
+		"closed":{"\ue5ff", "250"},
+		"empty": {"\ue5ff", "250"},
+	},
 }
 
-var filenameToIconMap = map[string]string{
-	".gitignore":     "\ue702",
-	".gitattributes": "\ue702",
-	"commit_editmsg": "\ue702",
-	"makefile":       "\ue673",
-	"config":         "\ue702",
-	".env":           "\ue702",
-}
-
-var filenameToColorMap = map[string]string{
-	".gitignore":     "196",
-	".gitattributes": "196",
-	"commit_editmsg": "196",
-	"makefile":       "244",
-	"config":         "250",
-	".env":           "250",
-}
-
-type dirIconsStruct struct {
-	ClosedDirectory string
-	OpenDirectory   string
-	EmptyDirectory  string
-	GitDirectory    string
-	RootDirectory   string
-}
-
-var DirIcons = dirIconsStruct{
-	ClosedDirectory: "\ue5ff",
-	OpenDirectory:   "\ue5fe",
-	EmptyDirectory:  "\ue5ff",
-	GitDirectory:    "\ue5fb",
-	RootDirectory:   "\ue5fc",
-}
-
-// GetFileIcon returns the PUA string of the file icon and the ANSI color code as a string
-// Eg: test.go => ('\ue627', '39')
-func GetFileIcon(filename string) (string, string) {
-	// Get file extension. If not we continue with the filename as is
+func GetFileIcon(filename string) Icon {
 	ext := strings.ToLower(filepath.Ext(filename))
-	if ext == "" {
-		ext = strings.ToLower(filename)
-	}
+	name := strings.ToLower(filename)
 
-	var icon string
-	// We first check the extToIconMap
-	icon, ok := extToIconMap[ext]
-	if ok {
-		color, ok := extToIconColor[ext]
-		if ok {
-			return icon, color // Return icon and color
-		}
-		return icon, "250" // Return the icon with the default color of grey
+	if icon, ok := IconRegistry.Extensions[ext]; ok {
+		return icon
 	}
-
-	// Next we check the filenameToIconMap
-	icon, ok = filenameToIconMap[ext]
-	if ok {
-		color, ok := filenameToColorMap[ext]
-		if ok {
-			return icon, color
-		}
-		return icon, "250"
+	if icon, ok := IconRegistry.Filenames[name]; ok {
+		return icon
 	}
-
-	// Return default file icon and color
-	return "\ue612", "250"
+	return Icon{"\ue612", "250"} // default icon
 }
 
 func GetDefaultFileIcon() string {
@@ -130,19 +94,17 @@ func GetDefaultFileIcon() string {
 	return style.Render("\ue612")
 }
 
-// GetDirectoryIcon returns the directory icon
 func GetDirectoryIcon(node *FileNode) string {
 	downChevron := "\ueab4"
 	leftChevron := "\ueab6"
 
-	icon := downChevron + " " + DirIcons.OpenDirectory
+	icon := downChevron + " " + IconRegistry.Folders["open"].Glyph
 
 	if node.Name == ".git" && !node.Expanded {
-		icon = leftChevron + " " + DirIcons.GitDirectory
+		icon = leftChevron + " " + IconRegistry.Folders["git"].Glyph
 	}
-
 	if !node.Expanded {
-		icon = leftChevron + " " + DirIcons.ClosedDirectory
+		icon = leftChevron + " " + IconRegistry.Folders["closed"].Glyph
 	}
 
 	return icon
