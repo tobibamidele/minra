@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/tobibamidele/minra/internal/session"
 	"github.com/tobibamidele/minra/pkg/fileio"
 )
 
@@ -116,3 +117,13 @@ func (e *Editor) PreviousBuffer() {
 		e.viewport.SetBuffer(buf)
 	}
 }
+
+// SaveState saves the current ui state
+func (e *Editor) SaveState() error {
+	return session.SaveUIState(e.sidebar, session.DefaultUIStatePath())
+}
+
+// LoadState loads the saved ui state
+// func (e *Editor) LoadState() error {
+// 	
+// }

@@ -1,5 +1,7 @@
 package sidebar
 
+import "encoding/json"
+
 // Sidebar represents the file browser sidebar
 type Sidebar struct {
 	tree          *FileTree
@@ -10,7 +12,7 @@ type Sidebar struct {
 	scrollOffset  int
 }
 
-// NewSidebar creates a new sidebar
+// New creates a new sidebar
 func New(rootPath string, width, height int) (*Sidebar, error) {
 	tree, err := NewFileTree(rootPath)
 	if err != nil {
@@ -172,4 +174,14 @@ func (s *Sidebar) restoreExpandedPaths(node *FileNode, expandedPaths map[string]
 			s.restoreExpandedPaths(child, expandedPaths)
 		}
 	}
+}
+
+// GetFileTreeState returns the current state of the file tree
+func (s *Sidebar) GetFileTreeState() string {
+	jsonBytes, err := json.MarshalIndent(s.tree.Root, "", "  ")
+	if err != nil {
+		return "{}"
+	}
+
+	return string(jsonBytes)
 }

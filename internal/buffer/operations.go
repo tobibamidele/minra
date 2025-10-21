@@ -1,6 +1,9 @@
 package buffer
 
-import "strings"
+import (
+	"path/filepath"
+	"strings"
+)
 
 var autoPairMap = map[rune]rune{
 	'{':  '}',
@@ -9,6 +12,9 @@ var autoPairMap = map[rune]rune{
 	'\'': '\'',
 	'"':  '"',
 }
+
+// Contains the extension of files that should have the tags automatically closed
+var autoPairTagExt = []string{".jsx", ".tsx", ".xml", ".html"}
 
 // tabSize defines indentation width
 const tabSize = 4
@@ -28,11 +34,15 @@ func (b *Buffer) InsertRune(line, col int, r rune) {
 	}
 
 	// Handle tag auto-close: <tag> → </tag>
-	if r == '>' {
-		insert := b.autoCloseTags(currentLine, col)
-		b.lines[line] = currentLine[:col] + insert + currentLine[col:]
-		b.modified = true
-		return
+	if r == '>'{
+		for i := range len(autoPairTagExt) {
+			if autoPairTagExt[i] == filepath.Ext(b.Filepath()) {
+				insert := b.autoCloseTags(currentLine, col)
+				b.lines[line] = currentLine[:col] + insert + currentLine[col:]
+				b.modified = true
+				return
+			}
+		}
 	}
 
 	// Regular auto-pairing for brackets and quotes
@@ -46,6 +56,7 @@ func (b *Buffer) InsertRune(line, col int, r rune) {
 	b.lines[line] = currentLine[:col] + string(r) + currentLine[col:]
 	b.modified = true
 }
+
 
 // DeleteRune deletes a rune at a position (backspace)
 func (b *Buffer) DeleteRune(line, col int) {

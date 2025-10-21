@@ -9,12 +9,12 @@ import (
 
 // FileNode represents a file or directory
 type FileNode struct {
-	Name     string
-	Path     string
-	IsDir    bool
-	Children []*FileNode
-	Expanded bool
-	Level    int
+	Name     string			`json:"name"`
+	Path     string			`json:"path"`
+	IsDir    bool			`json:"isDir"`
+	Children []*FileNode	`json:"children,omitempty"`
+	Expanded bool			`json:"expanded"`
+	Level    int			`json:"-"`
 }
 
 // FileTree represents the file tree
