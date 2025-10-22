@@ -34,7 +34,7 @@ func (b *Buffer) InsertRune(line, col int, r rune) {
 	}
 
 	// Handle tag auto-close: <tag> → </tag>
-	if r == '>'{
+	if r == '>' {
 		for i := range len(autoPairTagExt) {
 			if autoPairTagExt[i] == filepath.Ext(b.Filepath()) {
 				insert := b.autoCloseTags(currentLine, col)
@@ -56,7 +56,6 @@ func (b *Buffer) InsertRune(line, col int, r rune) {
 	b.lines[line] = currentLine[:col] + string(r) + currentLine[col:]
 	b.modified = true
 }
-
 
 // DeleteRune deletes a rune at a position (backspace)
 func (b *Buffer) DeleteRune(line, col int) {

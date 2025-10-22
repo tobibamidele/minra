@@ -5,6 +5,7 @@ import "github.com/charmbracelet/lipgloss"
 // Color palette
 var (
 	ColorBackground = lipgloss.Color("#0b232e")
+	ColorSidebar    = lipgloss.Color("#252f3b")
 	ColorForeground = lipgloss.Color("250")
 	ColorAccent     = lipgloss.Color("205")
 	ColorSuccess    = lipgloss.Color("42")

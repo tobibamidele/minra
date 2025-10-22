@@ -125,5 +125,5 @@ func (e *Editor) SaveState() error {
 
 // LoadState loads the saved ui state
 // func (e *Editor) LoadState() error {
-// 	
+//
 // }

@@ -192,7 +192,7 @@ func (e *Editor) handleInsertMode(msg tea.KeyMsg) tea.Cmd {
 		cur.MovePageUp(buf, e.getViewportHeight())
 		e.viewport.AdjustScroll(cur)
 	case KeyDelete:
-		buf.DeleteLine(cur.Line())	// TODO: Move th cursor to the previous line
+		buf.DeleteLine(cur.Line()) // TODO: Move th cursor to the previous line
 	case KeyPaste:
 		// Paste from clipboard
 		text, _ := e.clipboard.Paste()
@@ -212,7 +212,7 @@ func (e *Editor) handleInsertMode(msg tea.KeyMsg) tea.Cmd {
 		// Insert regular characters
 		runes := []rune(msg.String())
 		if len(runes) == 1 {
-	buf.InsertRune(cur.Line(), cur.Col(), runes[0])
+			buf.InsertRune(cur.Line(), cur.Col(), runes[0])
 			cur.MoveRight(buf)
 			e.viewport.AdjustScroll(cur)
 		}

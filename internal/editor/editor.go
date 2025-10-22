@@ -18,6 +18,7 @@ import (
 	"github.com/tobibamidele/minra/internal/ui"
 	"github.com/tobibamidele/minra/internal/viewport"
 	"github.com/tobibamidele/minra/internal/widgets"
+	"github.com/tobibamidele/minra/pkg/utils"
 )
 
 // Editor is the main editor model
@@ -125,6 +126,7 @@ func (e *Editor) View() string {
 	borderStyle := lipgloss.NewStyle().
 		Border(lipgloss.NormalBorder()).
 		BorderForeground(lipgloss.Color("240")).
+		BorderBackground(ui.ColorBackground).
 		Width(e.getViewportWidth() + 5).
 		Height(e.getViewportHeight()).
 		Background(ui.ColorBackground)
@@ -165,7 +167,7 @@ func (e *Editor) getViewportHeight() int {
 	return e.height - 4 // tabs + status bar + borders
 }
 
-func (e *Editor) renderStatusBar() string {
+func (e *Editor) renderStatusBars() string {
 	buf := e.bufferMgr.ActiveBuffer()
 
 	leftStyle := lipgloss.NewStyle().
@@ -182,7 +184,9 @@ func (e *Editor) renderStatusBar() string {
 		Padding(0, 1)
 
 	modified := ""
+	// leftChevron := "\uf053"
 	filename := "untitled"
+	fileLanguage := filepath.Ext(e.bufferMgr.ActiveBuffer().Filepath())
 	line := 1
 	col := 1
 
@@ -198,8 +202,8 @@ func (e *Editor) renderStatusBar() string {
 		col = cur.Col() + 1
 	}
 
-	right := rightStyle.Render(fmt.Sprintf("%s%s  Ln %d, Col %d",
-		modified, filename, line, col))
+	right := rightStyle.Render(fmt.Sprintf("%s%s %s %d:%d",
+		modified, filename, strings.Replace(fileLanguage, ".", "", 1), line, col))
 
 	gap := e.width - lipgloss.Width(left) - lipgloss.Width(right)
 	if gap < 0 {
@@ -210,6 +214,118 @@ func (e *Editor) renderStatusBar() string {
 		Background(lipgloss.Color("240")).
 		Width(e.width).
 		Render(left + strings.Repeat(" ", gap) + right)
+
+	return statusBar
+}
+
+func (e *Editor) renderStatusBar() string {
+	buf := e.bufferMgr.ActiveBuffer()
+	leftChevron := "\ue0b0"  // Solid chevron (not \ue0b1)
+	rightChevron := "\ue0b2" // Solid chevron (not \ue0b3)
+	leftLineChevron := "\ue0b1"
+	rightLineChevron := "\ue0b3"
+
+	bgColor := lipgloss.Color("#252f3b")
+	modeColor := lipgloss.Color("#9c9b9a")
+
+	baseStyle := lipgloss.NewStyle().Background(bgColor)
+	modeStyle := lipgloss.NewStyle().Background(modeColor)
+
+	// Mode section
+	modeStr := e.mode.String()
+
+	// Chevron transition from mode to base (mode color fg, base color bg)
+	modeChevronStyle := lipgloss.NewStyle().
+		Foreground(modeColor).
+		Background(bgColor)
+
+	statusMsg := e.statusMsg
+	gitBranch, err := utils.GetGitBranch(e.rootDir)
+	gitBranchIcon, gitBranchIconColor := "", ""
+	if err != nil {
+		// Do something here later
+	}
+
+	if gitBranch != "" {
+		gitBranchIcon, gitBranchIconColor = sidebar.GetGitIcon("branch").Glyph, sidebar.GetGitIcon("branch").Color
+	}
+
+	gitBranchStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(gitBranchIconColor))
+	// There's probably a better way to do this
+	gitBranchStr := " " + gitBranchStyle.Render(gitBranchIcon) + baseStyle.Render(" ") + baseStyle.Render(gitBranchStyle.Render(gitBranch)) + baseStyle.Render(" ")
+
+	left := modeStyle.Render(" "+lipgloss.NewStyle().Foreground(bgColor).Render(modeStr)) +
+		modeChevronStyle.Render(leftChevron) +
+		baseStyle.Render(gitBranchStr) +
+		modeChevronStyle.Render(leftLineChevron) +
+		baseStyle.Render(" "+statusMsg+" ") +
+		modeChevronStyle.Render(leftLineChevron)
+
+	osIcon, _ := " "+sidebar.GetOSIcon().Glyph+" ", sidebar.GetOSIcon().Color
+	modified := ""
+	filename := "untitled"
+	fileType := ""
+	line := 1
+	col := 1
+	if buf != nil {
+		if buf.Modified() {
+			modified = "[+] "
+		}
+		if buf.Filepath() != "" {
+			filename = filepath.Base(buf.Filepath())
+			fileType = " " + strings.Replace(filepath.Ext(filename), ".", "", 1) + " "
+		}
+		cur := buf.Cursor()
+		line = cur.Line()
+		col = cur.Col() + 1
+	}
+
+	// Right side: filename < filetype < line:col
+	rightText := fmt.Sprintf("%s%s ",
+		modified, filename)
+
+	// Chevron transition from base to mode (base color fg, mode color bg)
+	// lineColChevronStyle := lipgloss.NewStyle().
+	// 	Foreground(bgColor).
+	// 	Background(modeColor)
+
+	lineColText := fmt.Sprintf(" %d:%d ", line, col)
+
+	var right string
+
+	if fileType == "" {
+		right = baseStyle.Render(rightText) +
+			modeChevronStyle.Render(rightLineChevron) +
+			baseStyle.Render(osIcon) +
+			modeChevronStyle.Render(rightChevron) +
+			modeStyle.Render(lipgloss.NewStyle().Foreground(bgColor).Render(lineColText))
+	} else {
+		fileIcon, fileIconColor := " "+sidebar.GetFileIcon(filepath.Base(buf.Filepath())).Glyph, sidebar.GetFileIcon(buf.Filepath()).Color
+		fileIconStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(fileIconColor)).Background(bgColor)
+		right = baseStyle.Render(rightText) +
+			modeChevronStyle.Render(rightLineChevron) +
+			baseStyle.Render(osIcon) +
+			modeChevronStyle.Render(rightLineChevron) +
+			baseStyle.Render(fileIconStyle.Render(fileIcon)+baseStyle.Render(fileType)) +
+			modeChevronStyle.Render(rightChevron) +
+			modeStyle.Render(lipgloss.NewStyle().Foreground(bgColor).Render(lineColText))
+	}
+	//
+	// right := baseStyle.Render(rightText) +
+	// 	modeChevronStyle.Render(rightChevron) +
+	// 	// lineColChevronStyle.Render(rightChevron) +
+	// 	baseStyle.Render(fileType)+
+	// 	modeStyle.Render(lineColText)
+
+	gap := e.width - lipgloss.Width(left) - lipgloss.Width(right)
+	if gap < 0 {
+		gap = 0
+	}
+
+	statusBar := lipgloss.NewStyle().
+		Background(ui.ColorBackground).
+		Width(e.width).
+		Render(left + baseStyle.Render(strings.Repeat(" ", gap)) + right)
 
 	return statusBar
 }
