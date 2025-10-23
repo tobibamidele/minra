@@ -137,6 +137,8 @@ minra/
 ## TODO
 - [X] Fix cursor
 - [X] Fix tab identification - Currently doesn't identify tabs
+- [X] Fix rendering error where it attempts to highlight key words in string
+- [ ] Ignore keywords in backticks and comments
 - [ ] Fix background disappearing behind text
 - [X] Add auto closing of brackets
 - [X] Fix ANSI escape codes messing up editor

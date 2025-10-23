@@ -167,56 +167,6 @@ func (e *Editor) getViewportHeight() int {
 	return e.height - 4 // tabs + status bar + borders
 }
 
-func (e *Editor) renderStatusBars() string {
-	buf := e.bufferMgr.ActiveBuffer()
-
-	leftStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("230")).
-		Background(lipgloss.Color("240")).
-		Padding(0, 1)
-
-	modeStr := e.mode.String()
-	left := leftStyle.Render(modeStr) + " " + e.statusMsg
-
-	rightStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("230")).
-		Background(lipgloss.Color("240")).
-		Padding(0, 1)
-
-	modified := ""
-	// leftChevron := "\uf053"
-	filename := "untitled"
-	fileLanguage := filepath.Ext(e.bufferMgr.ActiveBuffer().Filepath())
-	line := 1
-	col := 1
-
-	if buf != nil {
-		if buf.Modified() {
-			modified = "[+] "
-		}
-		if buf.Filepath() != "" {
-			filename = filepath.Base(buf.Filepath())
-		}
-		cur := buf.Cursor()
-		line = cur.Line() + 1
-		col = cur.Col() + 1
-	}
-
-	right := rightStyle.Render(fmt.Sprintf("%s%s %s %d:%d",
-		modified, filename, strings.Replace(fileLanguage, ".", "", 1), line, col))
-
-	gap := e.width - lipgloss.Width(left) - lipgloss.Width(right)
-	if gap < 0 {
-		gap = 0
-	}
-
-	statusBar := lipgloss.NewStyle().
-		Background(lipgloss.Color("240")).
-		Width(e.width).
-		Render(left + strings.Repeat(" ", gap) + right)
-
-	return statusBar
-}
 
 func (e *Editor) renderStatusBar() string {
 	buf := e.bufferMgr.ActiveBuffer()
@@ -239,7 +189,6 @@ func (e *Editor) renderStatusBar() string {
 		Foreground(modeColor).
 		Background(bgColor)
 
-	statusMsg := e.statusMsg
 	gitBranch, err := utils.GetGitBranch(e.rootDir)
 	gitBranchIcon, gitBranchIconColor := "", ""
 	if err != nil {
@@ -257,9 +206,8 @@ func (e *Editor) renderStatusBar() string {
 	left := modeStyle.Render(" "+lipgloss.NewStyle().Foreground(bgColor).Render(modeStr)) +
 		modeChevronStyle.Render(leftChevron) +
 		baseStyle.Render(gitBranchStr) +
-		modeChevronStyle.Render(leftLineChevron) +
-		baseStyle.Render(" "+statusMsg+" ") +
-		modeChevronStyle.Render(leftLineChevron)
+		modeChevronStyle.Render(leftLineChevron) 
+
 
 	osIcon, _ := " "+sidebar.GetOSIcon().Glyph+" ", sidebar.GetOSIcon().Color
 	modified := ""
@@ -276,7 +224,7 @@ func (e *Editor) renderStatusBar() string {
 			fileType = " " + strings.Replace(filepath.Ext(filename), ".", "", 1) + " "
 		}
 		cur := buf.Cursor()
-		line = cur.Line()
+		line = cur.Line() + 1
 		col = cur.Col() + 1
 	}
 
@@ -322,12 +270,15 @@ func (e *Editor) renderStatusBar() string {
 		gap = 0
 	}
 
-	statusBar := lipgloss.NewStyle().
+	var statusBar strings.Builder
+	statusBar.WriteString(lipgloss.NewStyle().
 		Background(ui.ColorBackground).
 		Width(e.width).
-		Render(left + baseStyle.Render(strings.Repeat(" ", gap)) + right)
+		Render(left + baseStyle.Render(strings.Repeat(" ", gap)) + right))
+	statusBar.WriteString("\n")
+	statusBar.WriteString(lipgloss.NewStyle().Background(ui.ColorBackground).Width(e.width).Render(e.statusMsg))
 
-	return statusBar
+	return statusBar.String()
 }
 
 func (e *Editor) overlayWidget(mainView, widgetView string) string {

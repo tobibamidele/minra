@@ -11,6 +11,7 @@ var autoPairMap = map[rune]rune{
 	'(':  ')',
 	'\'': '\'',
 	'"':  '"',
+	'`':  '`',
 }
 
 // Contains the extension of files that should have the tags automatically closed
@@ -100,6 +101,7 @@ func (b *Buffer) InsertNewline(line, col int) {
 	leftPart := currentLine[:col]
 	rightPart := currentLine[col:]
 
+
 	// --- Detect current indentation ---
 	currentIndent := countLeadingTabsOrSpaces(leftPart)
 
@@ -107,7 +109,8 @@ func (b *Buffer) InsertNewline(line, col int) {
 	trimmedLeft := strings.TrimSpace(leftPart)
 	shouldIncrease := strings.HasSuffix(trimmedLeft, "{") ||
 		strings.HasSuffix(trimmedLeft, "[") ||
-		strings.HasSuffix(trimmedLeft, "(")
+		strings.HasSuffix(trimmedLeft, "(") || 
+		strings.HasSuffix(trimmedLeft, ":")
 
 	// --- Create the indentation strings ---
 	baseIndent := makeIndent(currentIndent)

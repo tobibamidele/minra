@@ -32,16 +32,20 @@ func NewBase() *Base {
 
 // HighlightWord highlights whole words
 func (b *Base) HighlightWord(text, word string, style lipgloss.Style) string {
+	inString := markStringRegions(text)
+
 	var result strings.Builder
 	i := 0
 	wordLen := len(word)
 
 	for i < len(text) {
-		// Check if we're at the start of the word (and not inside a longer identifier)
-		if i+wordLen <= len(text) &&
+		// Skip highlighting if inside a string
+		if !inString[i] &&
+			i+wordLen <= len(text) &&
 			text[i:i+wordLen] == word &&
 			isBoundary(text, i-1) &&
 			isBoundary(text, i+wordLen) {
+
 			result.WriteString(style.Render(word))
 			i += wordLen
 		} else {
@@ -50,6 +54,26 @@ func (b *Base) HighlightWord(text, word string, style lipgloss.Style) string {
 		}
 	}
 	return result.String()
+}
+
+func markStringRegions(text string) []bool {
+	inString := false
+	quote := rune(0)
+	mark := make([]bool, len(text))
+
+	for i, ch := range text {
+		if !inString && (ch == '"' || ch == '\'') {
+			inString = true
+			quote = ch
+			mark[i] = true
+		} else if inString && ch == quote && (i == 0 || text[i-1] != '\\') {
+			mark[i] = true
+			inString = false
+		} else if inString {
+			mark[i] = true
+		}
+	}
+	return mark
 }
 
 func isBoundary(s string, idx int) bool {
