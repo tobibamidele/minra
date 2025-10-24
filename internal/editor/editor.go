@@ -232,38 +232,42 @@ func (e *Editor) renderStatusBar() string {
 	rightText := fmt.Sprintf("%s%s ",
 		modified, filename)
 
-	// Chevron transition from base to mode (base color fg, mode color bg)
-	// lineColChevronStyle := lipgloss.NewStyle().
-	// 	Foreground(bgColor).
-	// 	Background(modeColor)
-
 	lineColText := fmt.Sprintf(" %d:%d ", line, col)
+	cursorLinePercent := " " + e.getCursorLinePercent() + " "
+	fileEncoding, err := e.detectEncoding(e.bufferMgr.ActiveBuffer().Filepath())
+	if err != nil {
+		// Do somthg here
+	}
+
+	fileEncoding = " " + fileEncoding + " "
 
 	var right string
 
 	if fileType == "" {
 		right = baseStyle.Render(rightText) +
 			modeChevronStyle.Render(rightLineChevron) +
+			baseStyle.Render(fileEncoding)+
+			modeChevronStyle.Render(rightLineChevron) +
 			baseStyle.Render(osIcon) +
-			modeChevronStyle.Render(rightChevron) +
+			modeChevronStyle.Render(rightLineChevron) +
+			baseStyle.Render(cursorLinePercent) +
+			modeChevronStyle.Render(rightChevron) + 
 			modeStyle.Render(lipgloss.NewStyle().Foreground(bgColor).Render(lineColText))
 	} else {
-		fileIcon, fileIconColor := " "+sidebar.GetFileIcon(filepath.Base(buf.Filepath())).Glyph, sidebar.GetFileIcon(buf.Filepath()).Color
+		fileIcon, fileIconColor := " "+sidebar.GetFileIcon(filepath.Base(buf.Filepath())).Glyph, sidebar.GetFileIcon(filepath.Base(buf.Filepath())).Color
 		fileIconStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(fileIconColor)).Background(bgColor)
 		right = baseStyle.Render(rightText) +
+			modeChevronStyle.Render(rightLineChevron) +
+			baseStyle.Render(fileEncoding)+
 			modeChevronStyle.Render(rightLineChevron) +
 			baseStyle.Render(osIcon) +
 			modeChevronStyle.Render(rightLineChevron) +
 			baseStyle.Render(fileIconStyle.Render(fileIcon)+baseStyle.Render(fileType)) +
+			modeChevronStyle.Render(rightLineChevron)+
+			baseStyle.Render(cursorLinePercent)+
 			modeChevronStyle.Render(rightChevron) +
 			modeStyle.Render(lipgloss.NewStyle().Foreground(bgColor).Render(lineColText))
 	}
-	//
-	// right := baseStyle.Render(rightText) +
-	// 	modeChevronStyle.Render(rightChevron) +
-	// 	// lineColChevronStyle.Render(rightChevron) +
-	// 	baseStyle.Render(fileType)+
-	// 	modeStyle.Render(lineColText)
 
 	gap := e.width - lipgloss.Width(left) - lipgloss.Width(right)
 	if gap < 0 {

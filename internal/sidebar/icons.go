@@ -51,6 +51,9 @@ var IconRegistry = struct {
 		".docm":  {"\ue6a5", "33"},
 		".txt":   {"\uf15c", "250"},
 		".sql":   {"\ue64d", "231"},
+		".exe":	  {"\ueae8", "196"},
+		".elf":	  {"\ueae8", "196"},
+		".vim":	  {"\ue62b", "47"},
 	},
 
 	Filenames: map[string]Icon{

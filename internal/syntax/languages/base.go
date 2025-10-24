@@ -4,7 +4,10 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/tobibamidele/minra/internal/ui"
 )
+
+var commentKeywords = []string{"TODO:", "NOTE:", "FIXME:", "BUG:", "HACK:"}
 
 // Language interface for syntax highlighting
 type Language interface {
@@ -18,6 +21,7 @@ type Base struct {
 	constantStyle lipgloss.Style
 	stringStyle   lipgloss.Style
 	commentStyle  lipgloss.Style
+	commentKeywordStyle lipgloss.Style
 }
 
 func NewBase() *Base {
@@ -27,6 +31,7 @@ func NewBase() *Base {
 		constantStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("141")),
 		stringStyle:   lipgloss.NewStyle().Foreground(lipgloss.Color("150")),
 		commentStyle:  lipgloss.NewStyle().Foreground(lipgloss.Color("243")),
+		commentKeywordStyle: lipgloss.NewStyle().Background(ui.ColorSelection).Foreground(lipgloss.Color("#ffffff")),
 	}
 }
 
@@ -109,7 +114,20 @@ func (b *Base) HighlightStrings(text string, style lipgloss.Style) string {
 	// return result.String()
 }
 
-// HighlightComments highlights comments
+// // HighlightComments highlights comments
+// func (b *Base) HighlightComments(text, commentStart string, style lipgloss.Style) string {
+// 	idx := strings.Index(text, commentStart)
+// 	if idx == -1 {
+// 		return text
+// 	}
+//
+// 	before := text[:idx]
+// 	comment := text[idx:]
+//
+// 	return before + style.Render(comment)
+// }
+
+// HighlightComments highlights comments and special comment keywords
 func (b *Base) HighlightComments(text, commentStart string, style lipgloss.Style) string {
 	idx := strings.Index(text, commentStart)
 	if idx == -1 {
@@ -119,5 +137,19 @@ func (b *Base) HighlightComments(text, commentStart string, style lipgloss.Style
 	before := text[:idx]
 	comment := text[idx:]
 
-	return before + style.Render(comment)
+	// First highlight whole comment normally
+	highlighted := style.Render(comment)
+
+	// Then highlight keywords inside the comment
+	for _, kw := range commentKeywords {
+		highlighted = strings.ReplaceAll(
+			highlighted,
+			kw,
+			b.commentKeywordStyle.Render(kw),
+		)
+	}
+
+	return before + highlighted
 }
+
+// TODO:
