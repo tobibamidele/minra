@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/tobibamidele/minra/pkg/utils"
 )
 
 // Manager manages multiple buffers
@@ -47,6 +48,7 @@ func (m *Manager) OpenBuffer(filepath, content string) (*Buffer, error) {
 	id := uuid.New().String()
 	buffer := NewFromContent(content, filepath)
 	buffer.SetID(id)
+	buffer.SetTabSize(utils.GetTabSizeByFilePath(filepath))
 
 	m.buffers[id] = buffer
 	m.bufferOrder = append(m.bufferOrder, id)

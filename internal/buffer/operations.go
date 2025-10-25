@@ -17,9 +17,6 @@ var autoPairMap = map[rune]rune{
 // Contains the extension of files that should have the tags automatically closed
 var autoPairTagExt = []string{".jsx", ".tsx", ".xml", ".html"}
 
-// tabSize defines indentation width
-const tabSize = 4
-
 // InsertRune inserts a rune at cursor position
 func (b *Buffer) InsertRune(line, col int, r rune) {
 	if line < 0 || line >= len(b.lines) {

@@ -56,6 +56,16 @@ func (b *Buffer) SetID(id string) {
 	b.id = id
 }
 
+// TabSize returns the tab size
+func (b *Buffer) TabSize() int {
+	return b.tabSize
+}
+
+// SetTabSize sets the tab size for the current buffer
+func (b *Buffer) SetTabSize(tabSize int) {
+	b.tabSize = tabSize
+}
+
 // LineCount returns the number of lines in the buffer
 func (b *Buffer) LineCount() int {
 	return len(b.lines)

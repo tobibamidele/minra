@@ -48,6 +48,7 @@ func New(rootDir string, config *Config) (*Editor, error) {
 	// Create initial buffer
 	buf := bufferMgr.NewBuffer()
 	tabMgr.NewTab(buf.ID(), "untitled")
+	buf.SetTabSize(utils.GetTabSizeByFilePath(buf.Filepath()))
 
 	// Create sidebar
 	sb, err := sidebar.New(rootDir, 35, 24)
@@ -234,7 +235,7 @@ func (e *Editor) renderStatusBar() string {
 
 	lineColText := fmt.Sprintf(" %d:%d ", line, col)
 	cursorLinePercent := " " + e.getCursorLinePercent() + " "
-	fileEncoding, err := e.detectEncoding(e.bufferMgr.ActiveBuffer().Filepath())
+	fileEncoding, err := utils.DetectFileEncoding(e.bufferMgr.ActiveBuffer().Filepath())
 	if err != nil {
 		// Do somthg here
 	}

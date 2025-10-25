@@ -1,9 +1,36 @@
 package utils
 
 import (
+	"path/filepath"
 	"strings"
 	"unicode"
 )
+
+var DefaultTabWidth = map[string]int{
+	".go":     8,  // gofmt uses tabs, equivalent to width 8 in many editors
+	".c":      8,
+	".h":      8,
+	".cpp":    4,
+	".hpp":    4,
+	".java":   4,
+	".js":     2,
+	".ts":     2,
+	".jsx":    2,
+	".tsx":    2,
+	".py":     4,
+	".rs":     4,
+	".rb":     2,
+	".php":    4,
+	".html":   2,
+	".css":    2,
+	".scss":   2,
+	".json":   2,
+	".yaml":   2,
+	".yml":    2,
+	".xml":    2,
+	".swift":  4,
+	".kt":     4, // Kotlin
+}
 
 // TruncateString truncates a string to maxLen
 func TruncateString(s string, maxLen int) string {
@@ -62,4 +89,12 @@ func ExpandTabs(line string, tabSize int) string {
 	}
 
 	return result.String()
+}
+
+func GetTabSizeByFilePath(path string) int {
+	ext := filepath.Ext(filepath.Base(path))
+	tabSize, ok := DefaultTabWidth[ext]; if !ok {
+		return 4 // Default
+	}
+	return tabSize
 }
