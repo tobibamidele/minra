@@ -1,6 +1,12 @@
 package sidebar
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"path/filepath"
+	"time"
+
+	"github.com/tobibamidele/minra/pkg/fileio"
+)
 
 // Sidebar represents the file browser sidebar
 type Sidebar struct {
@@ -10,6 +16,8 @@ type Sidebar struct {
 	width         int
 	height        int
 	scrollOffset  int
+
+	watcher		  *fileio.Watcher
 }
 
 // New creates a new sidebar
@@ -19,14 +27,66 @@ func New(rootPath string, width, height int) (*Sidebar, error) {
 		return nil, err
 	}
 
-	return &Sidebar{
+	s := &Sidebar{
 		tree:          tree,
 		selectedIndex: 0,
 		visible:       true,
 		width:         width,
 		height:        height,
 		scrollOffset:  0,
-	}, nil
+	}
+
+	w, err := fileio.NewWatcher(rootPath)
+	if err == nil {
+		s.watcher = w
+		go s.handleWatchEvents()
+	}
+
+	return s, nil
+}
+
+func (s *Sidebar) handleWatchEvents() {
+	debounce := time.NewTimer(time.Hour)
+	defer debounce.Stop()
+
+	var lastEventPath string
+
+	for path := range s.watcher.Events {
+		lastEventPath = path
+		debounce.Reset(300 * time.Millisecond)
+
+		select {
+		case <-debounce.C:
+			s.refreshPath(filepath.Dir(lastEventPath))
+		default:
+		}
+	}
+}
+
+func (s *Sidebar) refreshPath(dirPath string) {
+	if s.tree == nil || s.tree.Root == nil {
+		return
+	}
+
+	node := findNodeByPath(s.tree.Root, dirPath)
+	if node == nil {
+		// If directory not found (new folder created), just full refresh
+		s.Refresh()
+		return
+	}
+
+	if err := loadDirectory(node); err != nil {
+		return
+	}
+
+	s.tree.rebuildFlatList()
+	s.Render()
+}
+
+func (s *Sidebar) Close() {
+	if s.watcher != nil {
+		s.watcher.Close()
+	}
 }
 
 // IsVisible returns whether the sidebar is visible
@@ -41,6 +101,13 @@ func (s *Sidebar) Toggle() {
 
 // Width returns the sidebar width
 func (s *Sidebar) Width() int {
+	if !s.visible {
+		return 0
+	}
+	return s.width
+}
+
+func (s *Sidebar) Height() int {
 	if !s.visible {
 		return 0
 	}
@@ -185,3 +252,18 @@ func (s *Sidebar) GetFileTreeState() string {
 
 	return string(jsonBytes)
 }
+
+func findNodeByPath(node *FileNode, target string) *FileNode {
+	if node.Path == target {
+		return node
+	}
+	if node.IsDir {
+		for _, child := range node.Children {
+			if n := findNodeByPath(child, target); n != nil {
+				return n
+			}
+		}
+	}
+	return nil
+}
+

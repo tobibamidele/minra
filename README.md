@@ -138,6 +138,7 @@ minra/
 - [X] Fix cursor
 - [X] Fix tab identification - Currently doesn't identify tabs
 - [X] Fix rendering error where it attempts to highlight key words in string
+- [ ] Add filesearch support
 - [ ] Ignore keywords in backticks and comments
 - [ ] Fix background disappearing behind text
 - [X] Add auto closing of brackets
@@ -148,3 +149,5 @@ minra/
 - [ ] Add create file support
 - [X] Add find and replace support
 - [ ] Add LSP support (way in the future)
+- [ ] Add fuzzy file search support
+- [ ] Add file system watching for both sidebar and filesearch

@@ -10,6 +10,7 @@ const (
 	ModeCommand
 	ModeRename
 	ModeSearch
+	ModeFileSearch
 )
 
 func (m Mode) String() string {
@@ -28,6 +29,8 @@ func (m Mode) String() string {
 		return "RENAME"
 	case ModeSearch:
 		return "SEARCH"
+	case ModeFileSearch:
+		return "FILE SEARCH"
 	default:
 		return "UNKNOWN"
 	}

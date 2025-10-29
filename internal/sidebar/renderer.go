@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/tobibamidele/minra/internal/icons"
 	"github.com/tobibamidele/minra/internal/ui"
 )
 
@@ -49,9 +50,9 @@ func (s *Sidebar) Render() string {
 		// icon
 		icon, iconColor := "", "250"
 		if node.IsDir {
-			icon = GetDirectoryIcon(node)
+			icon = icons.GetDirectoryIcon(node.Name, node.Expanded)
 		} else {
-			fi := GetFileIcon(node.Name)
+			fi := icons.GetFileIcon(node.Name)
 			icon, iconColor = fi.Glyph, fi.Color
 		}
 		iconStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(iconColor))

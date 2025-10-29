@@ -2,6 +2,7 @@ package editor
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -10,6 +11,8 @@ import (
 	"github.com/muesli/termenv"
 	"github.com/tobibamidele/minra/internal/buffer"
 	"github.com/tobibamidele/minra/internal/clipboard"
+	fs "github.com/tobibamidele/minra/internal/filesearch"
+	"github.com/tobibamidele/minra/internal/icons"
 	"github.com/tobibamidele/minra/internal/search"
 	"github.com/tobibamidele/minra/internal/sidebar"
 	"github.com/tobibamidele/minra/internal/statusbar"
@@ -23,21 +26,23 @@ import (
 
 // Editor is the main editor model
 type Editor struct {
-	bufferMgr    *buffer.Manager
-	tabMgr       *tabs.Manager
-	clipboard    clipboard.Clipboard
-	sidebar      *sidebar.Sidebar
-	statusBar    *statusbar.StatusBar
-	viewport     *viewport.Viewport
-	highlighter  *syntax.Highlighter
-	searchEngine *search.Engine
-	renameWidget *widgets.RenameWidget
-	searchWidget *widgets.SearchWidget
-	mode         viewport.Mode
-	width        int
-	height       int
-	statusMsg    string
-	rootDir      string
+	bufferMgr				 *buffer.Manager
+	tabMgr					 *tabs.Manager
+	clipboard				 clipboard.Clipboard
+	sidebar					 *sidebar.Sidebar
+	statusBar				 *statusbar.StatusBar
+	viewport				 *viewport.Viewport
+	highlighter				 *syntax.Highlighter
+	searchEngine			 *search.Engine
+	renameWidget			 *widgets.RenameWidget
+	searchWidget			 *widgets.SearchWidget
+	fileSearchEngine		*fs.Engine
+	fileSearchSidebar		*fs.Sidebar
+	mode					 viewport.Mode
+	width					 int
+	height					 int
+	statusMsg				 string
+	rootDir					 string
 }
 
 // New creates a new editor
@@ -51,10 +56,18 @@ func New(rootDir string, config *Config) (*Editor, error) {
 	buf.SetTabSize(utils.GetTabSizeByFilePath(buf.Filepath()))
 
 	// Create sidebar
-	sb, err := sidebar.New(rootDir, 35, 24)
+	sbHeight, sbWidth := 35, 24
+	sb, err := sidebar.New(rootDir, sbHeight, sbWidth)
 	if err != nil {
 		sb = nil
 	}
+
+	rootDir, _ = os.Getwd()
+	engine, err := fs.NewEngine(rootDir)
+	if err == nil {
+		fmt.Printf("file count: %d", len(engine.Files()))
+	}
+
 
 	return &Editor{
 		bufferMgr:    bufferMgr,
@@ -67,6 +80,8 @@ func New(rootDir string, config *Config) (*Editor, error) {
 		searchEngine: search.NewEngine(),
 		renameWidget: widgets.NewRenameWidget(),
 		searchWidget: widgets.NewSearchWidget(),
+		fileSearchEngine: engine,
+		fileSearchSidebar: fs.NewSidebar(engine, sb.Width(), viewport.ScreenHeight() - 3),
 		mode:         viewport.ModeNormal,
 		statusMsg:    "Press 'i' for insert mode, 'e' for sidebar, Ctrl+S to save",
 		rootDir:      rootDir,
@@ -110,11 +125,17 @@ func (e *Editor) View() string {
 	// Render tabs
 	tabBar := e.tabMgr.Render(e.width)
 
-	// Render sidebar
+	// Render appropriate sidebar based on mode
 	sidebarView := ""
-	if e.sidebar != nil && e.sidebar.IsVisible() {
-		sidebarView = e.sidebar.Render()
+
+	if e.mode == viewport.ModeFileSearch && e.fileSearchSidebar != nil && e.fileSearchSidebar.IsVisible() {
+			// File search sidebar takes priority
+			sidebarView = e.fileSearchSidebar.Render()
+	} else if e.sidebar != nil && e.sidebar.IsVisible() {
+			// Normal sidebar
+			sidebarView = e.sidebar.Render()
 	}
+
 
 	// Render viewport
 	buf := e.bufferMgr.ActiveBuffer()
@@ -178,6 +199,9 @@ func (e *Editor) renderStatusBar() string {
 
 	bgColor := lipgloss.Color("#252f3b")
 	modeColor := lipgloss.Color("#9c9b9a")
+	if e.mode == viewport.ModeInsert {
+		modeColor = lipgloss.Color("#00ff00")
+	}
 
 	baseStyle := lipgloss.NewStyle().Background(bgColor)
 	modeStyle := lipgloss.NewStyle().Background(modeColor)
@@ -190,27 +214,35 @@ func (e *Editor) renderStatusBar() string {
 		Foreground(modeColor).
 		Background(bgColor)
 
-	gitBranch, err := utils.GetGitBranch(e.rootDir)
+	gitBranch, _ := utils.GetGitBranch(e.rootDir)
 	gitBranchIcon, gitBranchIconColor := "", ""
-	if err != nil {
-		// Do something here later
-	}
 
 	if gitBranch != "" {
-		gitBranchIcon, gitBranchIconColor = sidebar.GetGitIcon("branch").Glyph, sidebar.GetGitIcon("branch").Color
+		gitBranchIcon, gitBranchIconColor = icons.GetGitIcon("branch").Glyph, icons.GetGitIcon("branch").Color
 	}
 
 	gitBranchStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(gitBranchIconColor))
 	// There's probably a better way to do this
 	gitBranchStr := " " + gitBranchStyle.Render(gitBranchIcon) + baseStyle.Render(" ") + baseStyle.Render(gitBranchStyle.Render(gitBranch)) + baseStyle.Render(" ")
+	noOfLinesAdded, err := e.numberOfLinesAdded()
+	if err != nil {
+		noOfLinesAdded = ""
+	}
 
-	left := modeStyle.Render(" "+lipgloss.NewStyle().Foreground(bgColor).Render(modeStr)) +
+	left :=
+	    modeStyle.Render(" "+lipgloss.NewStyle().Foreground(bgColor).Render(modeStr)) +
 		modeChevronStyle.Render(leftChevron) +
 		baseStyle.Render(gitBranchStr) +
-		modeChevronStyle.Render(leftLineChevron) 
+		modeChevronStyle.Render(leftLineChevron)
+
+	if noOfLinesAdded != "" {
+		left = left + 
+			baseStyle.Render(" " + noOfLinesAdded + " ") + modeChevronStyle.Render(leftLineChevron)
+	}
+		
 
 
-	osIcon, _ := " "+sidebar.GetOSIcon().Glyph+" ", sidebar.GetOSIcon().Color
+	osIcon, _ := " "+ icons.GetOSIcon().Glyph+" ", icons.GetOSIcon().Color
 	modified := ""
 	filename := "untitled"
 	fileType := ""
@@ -237,40 +269,39 @@ func (e *Editor) renderStatusBar() string {
 	cursorLinePercent := " " + e.getCursorLinePercent() + " "
 	fileEncoding, err := utils.DetectFileEncoding(e.bufferMgr.ActiveBuffer().Filepath())
 	if err != nil {
-		// Do somthg here
+		fileEncoding = "unknown"
 	}
 
 	fileEncoding = " " + fileEncoding + " "
 
-	var right string
+	var right strings.Builder
+
+	right.WriteString(
+		baseStyle.Render(rightText) + 
+		modeChevronStyle.Render(rightLineChevron) +
+		baseStyle.Render(fileEncoding) +
+		modeChevronStyle.Render(rightLineChevron) +
+		baseStyle.Render(osIcon) +
+		modeChevronStyle.Render(rightLineChevron))
 
 	if fileType == "" {
-		right = baseStyle.Render(rightText) +
-			modeChevronStyle.Render(rightLineChevron) +
-			baseStyle.Render(fileEncoding)+
-			modeChevronStyle.Render(rightLineChevron) +
-			baseStyle.Render(osIcon) +
+		right.WriteString(
+			baseStyle.Render(cursorLinePercent) +
+			modeChevronStyle.Render(rightChevron) +
+			modeStyle.Render(lipgloss.NewStyle().Foreground(bgColor).Render(lineColText)))
+	} else {
+		fileIconInfo := icons.GetFileIcon(filepath.Base(buf.Filepath()))
+		fileIcon, fileIconColor := fileIconInfo.Glyph, fileIconInfo.Color
+		fileIconStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(fileIconColor)).Background(bgColor)
+		right.WriteString(
+			baseStyle.Render(" " + fileIconStyle.Render(fileIcon) + baseStyle.Render(fileType)) +
 			modeChevronStyle.Render(rightLineChevron) +
 			baseStyle.Render(cursorLinePercent) +
-			modeChevronStyle.Render(rightChevron) + 
-			modeStyle.Render(lipgloss.NewStyle().Foreground(bgColor).Render(lineColText))
-	} else {
-		fileIcon, fileIconColor := " "+sidebar.GetFileIcon(filepath.Base(buf.Filepath())).Glyph, sidebar.GetFileIcon(filepath.Base(buf.Filepath())).Color
-		fileIconStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(fileIconColor)).Background(bgColor)
-		right = baseStyle.Render(rightText) +
-			modeChevronStyle.Render(rightLineChevron) +
-			baseStyle.Render(fileEncoding)+
-			modeChevronStyle.Render(rightLineChevron) +
-			baseStyle.Render(osIcon) +
-			modeChevronStyle.Render(rightLineChevron) +
-			baseStyle.Render(fileIconStyle.Render(fileIcon)+baseStyle.Render(fileType)) +
-			modeChevronStyle.Render(rightLineChevron)+
-			baseStyle.Render(cursorLinePercent)+
 			modeChevronStyle.Render(rightChevron) +
-			modeStyle.Render(lipgloss.NewStyle().Foreground(bgColor).Render(lineColText))
+			modeStyle.Render(lipgloss.NewStyle().Foreground(bgColor).Render(lineColText)))
 	}
 
-	gap := e.width - lipgloss.Width(left) - lipgloss.Width(right)
+	gap := e.width - lipgloss.Width(left) - lipgloss.Width(right.String())
 	if gap < 0 {
 		gap = 0
 	}
@@ -279,7 +310,7 @@ func (e *Editor) renderStatusBar() string {
 	statusBar.WriteString(lipgloss.NewStyle().
 		Background(ui.ColorBackground).
 		Width(e.width).
-		Render(left + baseStyle.Render(strings.Repeat(" ", gap)) + right))
+		Render(left + baseStyle.Render(strings.Repeat(" ", gap)) + right.String()))
 	statusBar.WriteString("\n")
 	statusBar.WriteString(lipgloss.NewStyle().Background(ui.ColorBackground).Width(e.width).Render(e.statusMsg))
 

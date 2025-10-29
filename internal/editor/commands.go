@@ -6,6 +6,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/tobibamidele/minra/internal/session"
+	"github.com/tobibamidele/minra/internal/viewport"
 	"github.com/tobibamidele/minra/pkg/fileio"
 )
 
@@ -28,7 +29,11 @@ func (e *Editor) SaveFile() tea.Cmd {
 		return nil
 	}
 
+	e.mode = viewport.ModeNormal
+	
+
 	buf.SetModified(false)
+	e.bufferMgr.ActiveBuffer().SetPreviousLineCount(e.bufferMgr.ActiveBuffer().LineCount())
 	e.statusMsg = fmt.Sprintf("Saved: %s", filepath.Base(buf.Filepath()))
 	return nil
 }
@@ -42,6 +47,7 @@ func (e *Editor) OpenFile(path string) tea.Cmd {
 	}
 
 	buf, err := e.bufferMgr.OpenBuffer(path, content)
+	e.bufferMgr.ActiveBuffer().SetPreviousLineCount(e.bufferMgr.ActiveBuffer().LineCount())
 	if err != nil {
 		e.statusMsg = fmt.Sprintf("Error: %v", err)
 		return nil

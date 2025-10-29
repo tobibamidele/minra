@@ -16,6 +16,7 @@ type Buffer struct {
 	history  *History
 	language string
 	tabSize  int
+	previousLineCount	int	// Store the previous number of lines in the buffer
 }
 
 // New creates an empty buffer
@@ -131,4 +132,15 @@ func (b *Buffer) Language() string {
 // SetLanguage sets the language
 func (b *Buffer) SetLanguage(lang string) {
 	b.language = lang
+}
+
+// PreviousLineCount returns the number of lines in the buffer previously
+func (b *Buffer) PreviousLineCount() int {
+	return b.previousLineCount
+}
+
+
+// SetPreviousLineCount sets the `previousLineCount` value
+func (b *Buffer) SetPreviousLineCount(lineCount int) {
+	b.previousLineCount = lineCount
 }

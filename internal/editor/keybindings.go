@@ -59,6 +59,8 @@ func (e *Editor) HandleKeyPress(msg tea.KeyMsg) tea.Cmd {
 		return e.handleRenameMode(msg)
 	case viewport.ModeSearch:
 		return e.handleSearchMode(msg)
+	case viewport.ModeFileSearch:
+		return e.handleFileSearchMode(msg)
 	}
 
 	return nil
@@ -133,9 +135,12 @@ func (e *Editor) handleNormalMode(msg tea.KeyMsg) tea.Cmd {
 			e.statusMsg = "Pasted"
 		}
 	case KeySlash:
-		e.mode = viewport.ModeSearch
-		e.searchWidget.Show()
-		e.statusMsg = "-- SEARCH --"
+		e.mode = viewport.ModeFileSearch
+		if e.fileSearchSidebar != nil {
+			e.fileSearchSidebar.Show()
+			e.fileSearchSidebar.UpdateQuery("")
+		}
+		e.statusMsg = "-- FILE SEARCH --"
 	}
 
 	return nil
@@ -165,7 +170,6 @@ func (e *Editor) handleInsertMode(msg tea.KeyMsg) tea.Cmd {
 	case KeyEnter:
 		buf.InsertNewline(cur.Line(), cur.Col())
 		cur.MoveDown(buf)
-		// cur.MoveToLineStart() // <== removed coz it sets the position in InsertNewline
 		e.viewport.AdjustScroll(cur)
 	case KeyLeft:
 		cur.MoveLeft(buf)
@@ -307,6 +311,54 @@ func (e *Editor) handleSearchMode(msg tea.KeyMsg) tea.Cmd {
 
 	return nil
 }
+
+func (e *Editor) handleFileSearchMode(msg tea.KeyMsg) tea.Cmd {
+    if e.fileSearchSidebar == nil {
+        e.mode = viewport.ModeNormal
+        return nil
+    }
+
+    switch KeyType(msg.String()) {
+    case KeyEscape:
+        e.fileSearchSidebar.Hide()
+        e.mode = viewport.ModeNormal
+        e.statusMsg = "-- NORMAL --"
+    case KeyEnter:
+        sel := e.fileSearchSidebar.Selected()
+        if sel != nil {
+            e.OpenFile(sel.Path)
+            e.fileSearchSidebar.Hide()
+			e.fileSearchSidebar.UpdateQuery("")
+            e.mode = viewport.ModeNormal
+            e.statusMsg = fmt.Sprintf("Opened: %s", sel.Name)
+        }
+    case KeyUp:
+        e.fileSearchSidebar.MoveUp()
+	    e.OpenFile(e.fileSearchSidebar.Selected().Path)
+    case KeyDown:
+        e.fileSearchSidebar.MoveDown()
+		e.OpenFile(e.fileSearchSidebar.Selected().Path)
+    case KeyBackspace:
+        // remove last rune
+        if e.fileSearchSidebar.Query != "" {
+            rs := []rune(e.fileSearchSidebar.Query)
+            rs = rs[:len(rs)-1]
+            e.fileSearchSidebar.UpdateQuery(string(rs))
+        }
+    default:
+        // append single rune chars
+        runes := []rune(msg.String())
+        if len(runes) == 1 {
+            e.fileSearchSidebar.UpdateQuery(e.fileSearchSidebar.Query + string(runes[0]))
+        }
+    }
+
+    // Keep status bar showing current query as requested
+    e.statusMsg = e.fileSearchSidebar.Query
+    return nil
+}
+
+
 
 func (e *Editor) openSelectedFile() tea.Cmd {
 	if e.sidebar == nil {

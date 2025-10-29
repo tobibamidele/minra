@@ -1,4 +1,4 @@
-package sidebar
+package icons
 
 import (
 	"path/filepath"
@@ -51,9 +51,20 @@ var IconRegistry = struct {
 		".docm":  {"\ue6a5", "33"},
 		".txt":   {"\uf15c", "250"},
 		".sql":   {"\ue64d", "231"},
+		".db":	  {"\ue64d", "231"},
 		".exe":	  {"\ueae8", "196"},
+		".so":    {"\ueae8", "196"},
+		".obj":   {"\ueae8", "196"},
 		".elf":	  {"\ueae8", "196"},
 		".vim":	  {"\ue62b", "47"},
+		".m":	  {"\ue82a", "202"},
+		".mat":	  {"\ue82a", "202"},
+		".png":   {"\uf03e", "129"},
+		".jpeg":  {"\uf03e", "129"},
+		".jpg":   {"\uf03e", "129"},
+		".bmp":   {"\uf03e", "129"},
+		".csv":   {"\ue64a", "47"},
+		".xlsx":  {"\ue6a6", "47"},
 	},
 
 	Filenames: map[string]Icon{
@@ -116,16 +127,16 @@ func GetDefaultFileIcon() string {
 	return style.Render("\ue612")
 }
 
-func GetDirectoryIcon(node *FileNode) string {
+func GetDirectoryIcon(name string, isExpanded bool) string {
 	downChevron := "\ueab4"
 	leftChevron := "\ueab6"
 
 	icon := downChevron + " " + IconRegistry.Folders["open"].Glyph
 
-	if node.Name == ".git" && !node.Expanded {
+	if name == ".git" && !isExpanded {
 		icon = leftChevron + " " + IconRegistry.Folders["git"].Glyph
 	}
-	if !node.Expanded {
+	if !isExpanded {
 		icon = leftChevron + " " + IconRegistry.Folders["closed"].Glyph
 	}
 
@@ -151,3 +162,4 @@ func GetOSIcon() Icon {
 func GetGitIcon(icon string) Icon {
 	return IconRegistry.Git[icon]
 }
+
