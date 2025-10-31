@@ -58,6 +58,7 @@ func (s *Sidebar) UpdateQuery(q string) {
 }
 
 func (s *Sidebar) MoveUp() {
+	if len(s.results) == 0 { return }
 	if s.selected > 0 {
 		s.selected--
 		s.adjustScroll()
@@ -65,6 +66,7 @@ func (s *Sidebar) MoveUp() {
 }
 
 func (s *Sidebar) MoveDown() {
+	if len(s.results) == 0 { return }
 	if s.selected < len(s.results)-1 {
 		s.selected++
 		s.adjustScroll()
@@ -117,7 +119,7 @@ func (s *Sidebar) Render() string {
 		Width(s.width-2).
 		Align(lipgloss.Center)
 
-	baseStyle := lipgloss.NewStyle().Background(lipgloss.Color(ui.ColorSidebar))
+/* 	baseStyle := lipgloss.NewStyle().Background(lipgloss.Color(ui.ColorSidebar)) */
 
 	b.WriteString(titleStyle.Render("File Search") + "\n")
 
@@ -133,19 +135,11 @@ func (s *Sidebar) Render() string {
 		iconStyle := lipgloss.NewStyle().Foreground(lipgloss.Color(iconColor))
 
 		name := " " + r.Name
-		var nameStyled string
-		if isSelected {
-			nameStyled = selectedText.Render(name)
-			iconStyle = iconStyle.Background(selectedBg)
-		} else {
-			nameStyled = lipgloss.NewStyle().Background(ui.ColorSidebar).Render(name)
+		if lipgloss.Width(name) > 14 {
+			name = name[:10] + "..."
 		}
 
 		nameLen := lipgloss.Width(name)
-		if nameLen > 14 {
-			name = " " + r.Name[:12] + ".."
-			nameLen = lipgloss.Width(name)
-		}
 		
 		parent := ""
 		if r.ParentDir != "." && r.ParentDir != "" {
@@ -167,37 +161,36 @@ func (s *Sidebar) Render() string {
 			padding = 0
 		}
 
-
-		lineStyle := lipgloss.NewStyle().Width(s.width - 2)
-		//
-		// line := lipgloss.JoinHorizontal(
-		// 	0,
-		// 	iconStyle.Render(icon),
-		// 	nameStyled,
-		// 	lineStyle.Render(strings.Repeat(" ", padding)),
-		// 	// lineStyle.Render(strings.Repeat(" ", spaceBetween)),
-		// 	parent,
-		// )
-		var line strings.Builder
-		line.WriteString(" " + iconStyle.Render(icon) + nameStyled)
-		// Set the base style to match is isSelected
+		var nameStyled string
 		if isSelected {
-			baseStyle = baseStyle.Background(selectedBg)
+			nameStyled = selectedText.Render(name)
+			iconStyle = iconStyle.Background(selectedBg)
+		} else {
+			nameStyled = lipgloss.NewStyle().Background(ui.ColorSidebar).Render(name)
 		}
 
+
+		lineStyle := lipgloss.NewStyle().Width(s.width - 2)
+
+		// reset baseStyle each iteration
+		lineBase := lipgloss.NewStyle().Background(ui.ColorSidebar)
+		if isSelected {
+			lineBase = lipgloss.NewStyle().Background(selectedBg)
+		}
+
+		var line strings.Builder
+		line.WriteString(" " + iconStyle.Render(icon) + nameStyled)
 		line.WriteString(
-			baseStyle.Render(strings.Repeat(" ", padding)) + 
-			baseStyle.Render(strings.Repeat(" ", spaceBetween)) + baseStyle.Render(parent))
+			lineBase.Render(strings.Repeat(" ", padding)) +
+			lineBase.Render(strings.Repeat(" ", spaceBetween)) +
+			lineBase.Render(parent),
+			)
 
 		if isSelected {
-			temp := line
-			line.Reset()
-			line.WriteString(selectedText.Render(temp.String()))
 			lineStyle = lineStyle.Background(selectedBg)
 		} else {
 			lineStyle = lineStyle.Background(ui.ColorSidebar)
 		}
-
 		b.WriteString(lineStyle.Render(line.String()) + "\n")
 	}
 

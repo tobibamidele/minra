@@ -57,6 +57,26 @@ func (m *Manager) OpenBuffer(filepath, content string) (*Buffer, error) {
 	return buffer, nil
 }
 
+func (m *Manager) OpenBinaryBuffer(filepath string) (*Buffer, error) {
+	for _, b := range m.buffers {
+		if b.Filepath() == filepath {
+			m.activeBuffer = b.ID()
+			return b, nil
+		}
+	}
+
+	id := uuid.New().String()
+	buffer := NewFromBinary(filepath)
+	buffer.SetID(id)
+	buffer.SetIsModifiable(false)
+
+	m.buffers[id] =  buffer
+	m.bufferOrder = append(m.bufferOrder, id)
+	m.activeBuffer = id
+
+	return buffer, nil
+}
+
 // ActiveBuffer returns current buffer
 func (m *Manager) ActiveBuffer() *Buffer {
 	if m.activeBuffer == "" {

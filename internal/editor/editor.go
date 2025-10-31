@@ -63,10 +63,8 @@ func New(rootDir string, config *Config) (*Editor, error) {
 	}
 
 	rootDir, _ = os.Getwd()
-	engine, err := fs.NewEngine(rootDir)
-	if err == nil {
-		fmt.Printf("file count: %d", len(engine.Files()))
-	}
+	engine, _ := fs.NewEngine(rootDir)
+
 
 
 	return &Editor{

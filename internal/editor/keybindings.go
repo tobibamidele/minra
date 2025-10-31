@@ -334,10 +334,14 @@ func (e *Editor) handleFileSearchMode(msg tea.KeyMsg) tea.Cmd {
         }
     case KeyUp:
         e.fileSearchSidebar.MoveUp()
-	    e.OpenFile(e.fileSearchSidebar.Selected().Path)
+		if sel := e.fileSearchSidebar.Selected(); sel != nil {
+			e.OpenFile(sel.Path)
+		}
     case KeyDown:
         e.fileSearchSidebar.MoveDown()
-		e.OpenFile(e.fileSearchSidebar.Selected().Path)
+		if sel := e.fileSearchSidebar.Selected(); sel != nil {
+			e.OpenFile(sel.Path)
+		}
     case KeyBackspace:
         // remove last rune
         if e.fileSearchSidebar.Query != "" {

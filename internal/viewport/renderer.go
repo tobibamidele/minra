@@ -13,7 +13,23 @@ import (
 	"github.com/tobibamidele/minra/pkg/utils"
 )
 
+func (v *Viewport) renderBinaryNotice() string {
+    notice := "[Binary file — viewing disabled]"
+    style := lipgloss.NewStyle().
+        Foreground(lipgloss.Color("240")).
+        Background(ui.ColorBackground).
+        Width(v.Width()).
+        Height(v.Height()).
+        Align(lipgloss.Center, lipgloss.Center)
+
+    return style.Render(notice)
+}
+
+
 func (v *Viewport) Render(highlighter *syntax.Highlighter, cur *cursor.Cursor, mode Mode) string {
+	if v.isBinary {
+		v.renderBinaryNotice()
+	}
 	var b strings.Builder
 
 	startLine := v.scrollY

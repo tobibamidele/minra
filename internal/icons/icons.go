@@ -63,8 +63,10 @@ var IconRegistry = struct {
 		".jpeg":  {"\uf03e", "129"},
 		".jpg":   {"\uf03e", "129"},
 		".bmp":   {"\uf03e", "129"},
+		".mkv":   {"\uf03e", "129"},
 		".csv":   {"\ue64a", "47"},
 		".xlsx":  {"\ue6a6", "47"},
+		".ps1":   {"\ue86c", "33"},
 	},
 
 	Filenames: map[string]Icon{

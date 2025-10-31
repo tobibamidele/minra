@@ -10,6 +10,7 @@ import (
 // Viewport manages the visible area
 type Viewport struct {
 	buffer      *buffer.Buffer
+	isBinary	bool
 	width       int
 	height      int
 	scrollX     int
@@ -82,6 +83,16 @@ func (v *Viewport) ToggleLineNumbers() {
 // LineNumbers returns if line numbers are shown
 func (v *Viewport) LineNumbers() bool {
 	return v.lineNumbers
+}
+
+// IsBinary returns if the current buffer is a binary file
+func (v *Viewport) IsBinary() bool {
+	return v.isBinary
+}
+
+// SetIsBinary controls whether or not the content on the buffer is binary
+func (v *Viewport) SetIsBinary(value bool) {
+	v.isBinary = value
 }
 
 // Returns the current terminal width in columns

@@ -12,6 +12,7 @@ type Buffer struct {
 	lines    []string
 	filepath string
 	modified bool
+	isModifiable bool
 	cursor   *cursor.Cursor
 	history  *History
 	language string
@@ -19,15 +20,30 @@ type Buffer struct {
 	previousLineCount	int	// Store the previous number of lines in the buffer
 }
 
+
+const BINARY_CONTENTS_HIDDEN_MSG string = "[binary file contents hidden]"
 // New creates an empty buffer
 func New() *Buffer {
 	return &Buffer{
 		lines:    []string{""},
 		filepath: "",
 		modified: false,
+		isModifiable: true,
 		cursor:   cursor.New(),
 		history:  NewHistory(),
 		tabSize:  4,
+	}
+}
+
+func NewFromBinary(filepath string) *Buffer {
+	return &Buffer{
+		lines: []string{BINARY_CONTENTS_HIDDEN_MSG},
+		filepath: filepath,
+		modified: false,
+		isModifiable: false,
+		cursor: cursor.New(),
+		history: NewHistory(),
+		tabSize: 4,
 	}
 }
 
@@ -42,6 +58,7 @@ func NewFromContent(content string, filepath string) *Buffer {
 		lines:    lines,
 		filepath: filepath,
 		modified: false,
+		isModifiable: true,
 		cursor:   cursor.New(),
 		history:  NewHistory(),
 	}
@@ -72,6 +89,16 @@ func (b *Buffer) LineCount() int {
 	return len(b.lines)
 }
 
+// IsModifiable returns true if the current buffer is modifiable and vice versa
+func (b *Buffer) IsModifiable() bool {
+	return b.isModifiable
+}
+
+// SetIsModifiable sets if the buffer should be modifiable
+func (b *Buffer) SetIsModifiable(value bool) {
+	b.isModifiable = value
+}
+
 // Line returns a specific line
 func (b *Buffer) Line(n int) string {
 	if n < 0 || n > len(b.lines) {
@@ -88,6 +115,7 @@ func (b *Buffer) Lines() []string {
 
 // SetLines sets a specific line
 func (b *Buffer) SetLine(n int, content string) {
+	if !b.IsModifiable() { return }
 	if n >= 0 && n < len(b.lines) {
 		b.lines[n] = content
 		b.modified = true

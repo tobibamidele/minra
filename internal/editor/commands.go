@@ -10,6 +10,8 @@ import (
 	"github.com/tobibamidele/minra/pkg/fileio"
 )
 
+
+const BINARY_CONTENTS_HIDDEN_MSG string = "[binary file contents hidden]"
 // SaveFile saves current buffer
 func (e *Editor) SaveFile() tea.Cmd {
 	buf := e.bufferMgr.ActiveBuffer()
@@ -46,7 +48,13 @@ func (e *Editor) OpenFile(path string) tea.Cmd {
 		return nil
 	}
 
+	isBinary := fileio.IsBinaryFile(path)
+
 	buf, err := e.bufferMgr.OpenBuffer(path, content)
+	if isBinary {
+		buf, err = e.bufferMgr.OpenBinaryBuffer(path)
+	}
+
 	e.bufferMgr.ActiveBuffer().SetPreviousLineCount(e.bufferMgr.ActiveBuffer().LineCount())
 	if err != nil {
 		e.statusMsg = fmt.Sprintf("Error: %v", err)
@@ -56,6 +64,9 @@ func (e *Editor) OpenFile(path string) tea.Cmd {
 	e.tabMgr.NewTab(buf.ID(), filepath.Base(path))
 
 	// Update viewport
+	if isBinary {
+		e.viewport.SetIsBinary(true)
+	}
 	e.viewport.SetBuffer(buf)
 
 	// Detect language for syntax highlighting

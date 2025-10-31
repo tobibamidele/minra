@@ -138,7 +138,7 @@ minra/
 - [X] Fix cursor
 - [X] Fix tab identification - Currently doesn't identify tabs
 - [X] Fix rendering error where it attempts to highlight key words in string
-- [ ] Add filesearch support
+- [X] Add filesearch support
 - [ ] Ignore keywords in backticks and comments
 - [ ] Fix background disappearing behind text
 - [X] Add auto closing of brackets

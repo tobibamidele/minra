@@ -19,6 +19,7 @@ var autoPairTagExt = []string{".jsx", ".tsx", ".xml", ".html"}
 
 // InsertRune inserts a rune at cursor position
 func (b *Buffer) InsertRune(line, col int, r rune) {
+	if !b.IsModifiable() { return }
 	if line < 0 || line >= len(b.lines) {
 		return
 	}
@@ -57,6 +58,7 @@ func (b *Buffer) InsertRune(line, col int, r rune) {
 
 // DeleteRune deletes a rune at a position (backspace)
 func (b *Buffer) DeleteRune(line, col int) {
+	if !b.IsModifiable() { return }
 	if line < 0 || line >= len(b.lines) {
 		return
 	}
@@ -83,6 +85,7 @@ func (b *Buffer) DeleteRune(line, col int) {
 
 // InsertNewline inserts a newline at position with auto-indentation
 func (b *Buffer) InsertNewline(line, col int) {
+	if !b.IsModifiable() { return }
 	if line < 0 || line >= len(b.lines) {
 		return
 	}
@@ -146,6 +149,7 @@ func makeIndent(width int) string {
 
 // DeleteLine deletes an entire line
 func (b *Buffer) DeleteLine(line int) {
+	if !b.IsModifiable() { return }
 	if line < 0 || line >= len(b.lines) {
 		return
 	}
@@ -159,6 +163,7 @@ func (b *Buffer) DeleteLine(line int) {
 
 // InsertText inserts text at position
 func (b *Buffer) InsertText(line, col int, text string) {
+	if !b.IsModifiable() { return }
 	lines := strings.Split(text, "\n")
 
 	if len(lines) == 1 {
